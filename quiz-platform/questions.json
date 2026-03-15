@@ -1,0 +1,24 @@
+{
+  "stage1": [
+    { "id": "S1Q1", "text": "Capital of France?", "options": ["A. Paris", "B. Rome", "C. Berlin", "D. Madrid"], "correct": "A" },
+    { "id": "S1Q2", "text": "5 x 6 = ?", "options": ["A. 28", "B. 30", "C. 35", "D. 26"], "correct": "B" },
+    { "id": "S1Q3", "text": "Water chemical formula?", "options": ["A. O2", "B. CO2", "C. H2O", "D. H2"], "correct": "C" },
+    { "id": "S1Q4", "text": "Largest planet?", "options": ["A. Earth", "B. Jupiter", "C. Mars", "D. Venus"], "correct": "B" },
+    { "id": "S1Q5", "text": "HTML stands for?", "options": ["A. HyperText Markup Language", "B. HighText Machine Language", "C. Hyperlinks Text Mark Language", "D. Home Tool Markup Language"], "correct": "A" },
+    { "id": "S1Q6", "text": "Square root of 81?", "options": ["A. 8", "B. 9", "C. 7", "D. 6"], "correct": "B" },
+    { "id": "S1Q7", "text": "Which is a prime number?", "options": ["A. 21", "B. 27", "C. 29", "D. 33"], "correct": "C" },
+    { "id": "S1Q8", "text": "Fastest land animal?", "options": ["A. Tiger", "B. Cheetah", "C. Lion", "D. Horse"], "correct": "B" },
+    { "id": "S1Q9", "text": "Who wrote Hamlet?", "options": ["A. Shakespeare", "B. Dickens", "C. Tolstoy", "D. Twain"], "correct": "A" },
+    { "id": "S1Q10", "text": "Binary of decimal 2?", "options": ["A. 01", "B. 11", "C. 10", "D. 100"], "correct": "C" }
+  ],
+  "stage2": [
+    { "id": "S2Q1", "text": "Sun rises in the?", "options": ["A. North", "B. South", "C. East", "D. West"], "correct": "C" },
+    { "id": "S2Q2", "text": "Largest ocean?", "options": ["A. Atlantic", "B. Pacific", "C. Indian", "D. Arctic"], "correct": "B" },
+    { "id": "S2Q3", "text": "7 + 8 = ?", "options": ["A. 14", "B. 15", "C. 16", "D. 17"], "correct": "B" }
+  ],
+  "stage3": [
+    { "id": "S3Q1", "text": "Planet known as Red Planet?", "options": ["A. Mars", "B. Venus", "C. Saturn", "D. Mercury"], "correct": "A" },
+    { "id": "S3Q2", "text": "2^5 = ?", "options": ["A. 10", "B. 16", "C. 25", "D. 32"], "correct": "D" },
+    { "id": "S3Q3", "text": "CSS used for?", "options": ["A. Logic", "B. Styling", "C. Database", "D. Hosting"], "correct": "B" }
+  ]
+}
