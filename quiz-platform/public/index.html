@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classroom Quiz - Team</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="container team-container">
+    <h1>Classroom Quiz</h1>
+
+    <section id="joinSection" class="card">
+      <h2>Join as Team</h2>
+      <input type="text" id="teamName" placeholder="Enter team name" maxlength="30" />
+      <button id="joinBtn">Join Quiz</button>
+      <p id="joinError" class="error"></p>
+    </section>
+
+    <section id="quizSection" class="card hidden">
+      <div class="status-row">
+        <span id="stageBadge" class="badge">Stage 1</span>
+        <span id="progressText"></span>
+      </div>
+      <h2 id="questionText">Waiting for question...</h2>
+      <div id="timer" class="timer">--</div>
+      <div id="options" class="options-grid">
+        <button class="answer-btn" data-answer="A">A</button>
+        <button class="answer-btn" data-answer="B">B</button>
+        <button class="answer-btn" data-answer="C">C</button>
+        <button class="answer-btn" data-answer="D">D</button>
+      </div>
+      <p id="attemptStatus">Attempts: 0</p>
+      <p id="waitingText" class="muted">Waiting for teacher to start the next question.</p>
+      <p id="feedbackText"></p>
+      <h3 id="scoreText">Score: 500</h3>
+    </section>
+
+    <section class="card">
+      <h2>Live Leaderboard</h2>
+      <table>
+        <thead>
+          <tr><th>Rank</th><th>Team</th><th>Score</th></tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/team.js"></script>
+</body>
+</html>
