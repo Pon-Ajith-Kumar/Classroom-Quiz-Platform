@@ -1,24 +1,24 @@
 {
   "stage1": [
-    { "id": "S1Q1", "text": "Capital of France?", "options": ["A. Paris", "B. Rome", "C. Berlin", "D. Madrid"], "correct": "A" },
-    { "id": "S1Q2", "text": "5 x 6 = ?", "options": ["A. 28", "B. 30", "C. 35", "D. 26"], "correct": "B" },
-    { "id": "S1Q3", "text": "Water chemical formula?", "options": ["A. O2", "B. CO2", "C. H2O", "D. H2"], "correct": "C" },
-    { "id": "S1Q4", "text": "Largest planet?", "options": ["A. Earth", "B. Jupiter", "C. Mars", "D. Venus"], "correct": "B" },
-    { "id": "S1Q5", "text": "HTML stands for?", "options": ["A. HyperText Markup Language", "B. HighText Machine Language", "C. Hyperlinks Text Mark Language", "D. Home Tool Markup Language"], "correct": "A" },
-    { "id": "S1Q6", "text": "Square root of 81?", "options": ["A. 8", "B. 9", "C. 7", "D. 6"], "correct": "B" },
-    { "id": "S1Q7", "text": "Which is a prime number?", "options": ["A. 21", "B. 27", "C. 29", "D. 33"], "correct": "C" },
-    { "id": "S1Q8", "text": "Fastest land animal?", "options": ["A. Tiger", "B. Cheetah", "C. Lion", "D. Horse"], "correct": "B" },
-    { "id": "S1Q9", "text": "Who wrote Hamlet?", "options": ["A. Shakespeare", "B. Dickens", "C. Tolstoy", "D. Twain"], "correct": "A" },
-    { "id": "S1Q10", "text": "Binary of decimal 2?", "options": ["A. 01", "B. 11", "C. 10", "D. 100"], "correct": "C" }
+    { "id": "S1Q1", "text": "Capital of France?", "options": ["Paris", "Rome", "Berlin", "Madrid"], "correct": "A", "explanation": "Paris is the capital and most populous city of France, located in the north-central part of the country." },
+    { "id": "S1Q2", "text": "5 x 6 = ?", "options": ["28", "30", "35", "26"], "correct": "B", "explanation": "Multiplication: 5 × 6 = 30. This is a basic arithmetic operation." },
+    { "id": "S1Q3", "text": "Water chemical formula?", "options": ["O2", "CO2", "H2O", "H2"], "correct": "C", "explanation": "Water (H2O) consists of 2 hydrogen atoms and 1 oxygen atom bonded together." },
+    { "id": "S1Q4", "text": "Largest planet?", "options": ["Earth", "Jupiter", "Mars", "Venus"], "correct": "B", "explanation": "Jupiter is the largest planet in our solar system, with a diameter of about 88,000 miles." },
+    { "id": "S1Q5", "text": "HTML stands for?", "options": ["HyperText Markup Language", "HighText Machine Language", "Hyperlinks Text Mark Language", "Home Tool Markup Language"], "correct": "A", "explanation": "HTML (HyperText Markup Language) is the standard markup language used to create web pages." },
+    { "id": "S1Q6", "text": "Square root of 81?", "options": ["8", "9", "7", "6"], "correct": "B", "explanation": "√81 = 9, because 9 × 9 = 81. The square root finds the number that when multiplied by itself gives 81." },
+    { "id": "S1Q7", "text": "Which is a prime number?", "options": ["21", "27", "29", "33"], "correct": "C", "explanation": "29 is a prime number because it can only be divided by 1 and itself. 21, 27, and 33 are composite numbers." },
+    { "id": "S1Q8", "text": "Fastest land animal?", "options": ["Tiger", "Cheetah", "Lion", "Horse"], "correct": "B", "explanation": "The cheetah is the fastest land animal, capable of reaching speeds up to 70 mph (112 km/h)." },
+    { "id": "S1Q9", "text": "Who wrote Hamlet?", "options": ["Shakespeare", "Dickens", "Tolstoy", "Twain"], "correct": "A", "explanation": "William Shakespeare wrote Hamlet, one of his most famous tragedies, believed to be written between 1600 and 1601." },
+    { "id": "S1Q10", "text": "Binary of decimal 2?", "options": ["01", "11", "10", "100"], "correct": "C", "explanation": "The decimal number 2 is represented as 10 in binary (1×2¹ + 0×2⁰ = 2)." }
   ],
   "stage2": [
-    { "id": "S2Q1", "text": "Sun rises in the?", "options": ["A. North", "B. South", "C. East", "D. West"], "correct": "C" },
-    { "id": "S2Q2", "text": "Largest ocean?", "options": ["A. Atlantic", "B. Pacific", "C. Indian", "D. Arctic"], "correct": "B" },
-    { "id": "S2Q3", "text": "7 + 8 = ?", "options": ["A. 14", "B. 15", "C. 16", "D. 17"], "correct": "B" }
+    { "id": "S2Q1", "text": "Sun rises in the?", "options": ["North", "South", "East", "West"], "correct": "C", "explanation": "The sun rises in the East due to the Earth's rotation from West to East." },
+    { "id": "S2Q2", "text": "Largest ocean?", "options": ["Atlantic", "Pacific", "Indian", "Arctic"], "correct": "B", "explanation": "The Pacific Ocean is the largest ocean on Earth, covering approximately 46% of the world's ocean surface." },
+    { "id": "S2Q3", "text": "7 + 8 = ?", "options": ["14", "15", "16", "17"], "correct": "B", "explanation": "7 + 8 = 15. This is a simple addition problem." }
   ],
   "stage3": [
-    { "id": "S3Q1", "text": "Planet known as Red Planet?", "options": ["A. Mars", "B. Venus", "C. Saturn", "D. Mercury"], "correct": "A" },
-    { "id": "S3Q2", "text": "2^5 = ?", "options": ["A. 10", "B. 16", "C. 25", "D. 32"], "correct": "D" },
-    { "id": "S3Q3", "text": "CSS used for?", "options": ["A. Logic", "B. Styling", "C. Database", "D. Hosting"], "correct": "B" }
+    { "id": "S3Q1", "text": "Planet known as Red Planet?", "options": ["Mars", "Venus", "Saturn", "Mercury"], "correct": "A", "explanation": "Mars is called the Red Planet because of the iron oxide (rust) on its surface, which gives it a reddish appearance." },
+    { "id": "S3Q2", "text": "2^5 = ?", "options": ["10", "16", "25", "32"], "correct": "D", "explanation": "2^5 = 2 × 2 × 2 × 2 × 2 = 32. Exponentiation means multiplying the base by itself 5 times." },
+    { "id": "S3Q3", "text": "CSS used for?", "options": ["Logic", "Styling", "Database", "Hosting"], "correct": "B", "explanation": "CSS (Cascading Style Sheets) is used for styling web pages, controlling layout, colors, fonts, and visual design." }
   ]
 }

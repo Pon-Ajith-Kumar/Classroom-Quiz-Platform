@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classroom Quiz - Teacher</title>
+  <title>Quiz Master - Teacher</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <main class="container">
-    <h1>Teacher Control Panel</h1>
+    <h1>🎯 Quiz Control Panel</h1>
 
     <section class="card controls">
       <div class="status-row">
@@ -16,17 +16,9 @@
         <span id="teacherProgress">Q1 / 10</span>
       </div>
       <div class="button-row">
-        <button id="startQuestionBtn">Start Question</button>
-        <button id="endQuestionBtn">End Question</button>
-        <button id="nextQuestionBtn">Next Question</button>
-        <button id="nextStageBtn">Move to Next Stage</button>
-        <button id="resetAttemptsBtn">Reset Attempts</button>
-      </div>
-      <div class="button-row">
-        <button class="correct-btn" data-correct="A">Correct: A</button>
-        <button class="correct-btn" data-correct="B">Correct: B</button>
-        <button class="correct-btn" data-correct="C">Correct: C</button>
-        <button class="correct-btn" data-correct="D">Correct: D</button>
+        <button id="startQuestionBtn">▶ Start Question</button>
+        <button id="nextQuestionBtn">⏭ Next Question</button>
+        <button id="nextStageBtn">🎭 Next Round</button>
       </div>
       <p id="questionLabel">Current Question: Waiting...</p>
       <p id="teacherTimer" class="timer">--</p>
@@ -34,7 +26,14 @@
     </section>
 
     <section class="card">
-      <h2>Team Answers (Current Question)</h2>
+      <h2>📊 Live Leaderboard</h2>
+      <div class="leaderboard-container" id="teacherLeaderboard"></div>
+      <p id="finalistsText" class="info-text"></p>
+      <p id="winnerText" class="info-text"></p>
+    </section>
+
+    <section class="card">
+      <h2>👥 Team Answers (Current Question)</h2>
       <table>
         <thead>
           <tr><th>Team</th><th>Answer</th><th>Attempt</th><th>Timestamp</th><th>Correct</th></tr>
@@ -42,19 +41,45 @@
         <tbody id="answersBody"></tbody>
       </table>
     </section>
-
-    <section class="card">
-      <h2>Leaderboard</h2>
-      <table>
-        <thead>
-          <tr><th>Rank</th><th>Team</th><th>Score</th><th>Status</th></tr>
-        </thead>
-        <tbody id="teacherLeaderboardBody"></tbody>
-      </table>
-      <p id="finalistsText"></p>
-      <p id="winnerText"></p>
-    </section>
   </main>
+
+  <!-- Answer Popup Modal -->
+  <div class="modal-overlay" id="answerModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Correct Answer</h3>
+      </div>
+      <div class="modal-body">
+        <div class="answer-display">
+          <div class="answer-label">Correct Answer</div>
+          <div class="answer-letter" id="correctAnswerLetter">A</div>
+          <div class="answer-text" id="correctAnswerText">Option Text</div>
+        </div>
+        <div class="explanation" id="answerExplanation">
+          Explanation will appear here
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="close-btn" id="closeAnswerModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="announcementModal">
+    <div class="modal-content announcement-modal" id="announcementCard">
+      <div class="modal-header">
+        <div class="announcement-emoji" id="announcementEmoji">🏆</div>
+        <h3 class="modal-title" id="announcementTitle">Winner Update</h3>
+      </div>
+      <div class="modal-body">
+        <div class="announcement-winner" id="announcementWinner"></div>
+        <div class="explanation announcement-message" id="announcementMessage">Announcement message</div>
+      </div>
+      <div class="modal-footer">
+        <button class="close-btn" id="closeAnnouncementModal">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/teacher.js"></script>

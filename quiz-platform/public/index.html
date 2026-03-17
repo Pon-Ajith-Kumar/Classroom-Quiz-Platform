@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classroom Quiz - Team</title>
+  <title>Quiz Master - Play</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <main class="container team-container">
-    <h1>Classroom Quiz</h1>
+    <header class="team-hero">
+      <h1>🎮 Quiz Challenge</h1>
+      <p id="teamDisplayName" class="team-display hidden"></p>
+    </header>
 
     <section id="joinSection" class="card">
       <h2>Join as Team</h2>
-      <input type="text" id="teamName" placeholder="Enter team name" maxlength="30" />
-      <button id="joinBtn">Join Quiz</button>
+      <input type="text" id="teamName" placeholder="Enter your team name" maxlength="30" />
+      <button id="joinBtn">🚀 Join Quiz</button>
       <p id="joinError" class="error"></p>
     </section>
 
@@ -30,22 +33,65 @@
         <button class="answer-btn" data-answer="C">C</button>
         <button class="answer-btn" data-answer="D">D</button>
       </div>
-      <p id="attemptStatus">Attempts: 0</p>
+      <p id="attemptStatus"></p>
       <p id="waitingText" class="muted">Waiting for teacher to start the next question.</p>
       <p id="feedbackText"></p>
       <h3 id="scoreText">Score: 500</h3>
     </section>
 
     <section class="card">
-      <h2>Live Leaderboard</h2>
+      <h2>📊 Live Leaderboard</h2>
+      <div class="leaderboard-container" id="leaderboard"></div>
+    </section>
+
+    <section class="card" id="scoreSheetSection" style="display: none;">
+      <h2>📈 Your Progress</h2>
       <table>
         <thead>
-          <tr><th>Rank</th><th>Team</th><th>Score</th></tr>
+          <tr><th>Stage</th><th>Q#</th><th>Answer</th><th>Correct</th><th>Points</th></tr>
         </thead>
-        <tbody id="leaderboardBody"></tbody>
+        <tbody id="scoreSheetBody"></tbody>
       </table>
     </section>
   </main>
+
+  <!-- Answer Popup Modal -->
+  <div class="modal-overlay" id="answerModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">✓ Correct Answer</h3>
+      </div>
+      <div class="modal-body">
+        <div class="answer-display">
+          <div class="answer-label">Correct Answer</div>
+          <div class="answer-letter" id="correctAnswerLetter">A</div>
+          <div class="answer-text" id="correctAnswerText">Option Text</div>
+        </div>
+        <div class="explanation" id="answerExplanation">
+          Explanation will appear here
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="close-btn" id="closeAnswerModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="announcementModal">
+    <div class="modal-content announcement-modal" id="announcementCard">
+      <div class="modal-header">
+        <div class="announcement-emoji" id="announcementEmoji">🏆</div>
+        <h3 class="modal-title" id="announcementTitle">Winner Update</h3>
+      </div>
+      <div class="modal-body">
+        <div class="announcement-winner" id="announcementWinner"></div>
+        <div class="explanation announcement-message" id="announcementMessage">Announcement message</div>
+      </div>
+      <div class="modal-footer">
+        <button class="close-btn" id="closeAnnouncementModal">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/team.js"></script>

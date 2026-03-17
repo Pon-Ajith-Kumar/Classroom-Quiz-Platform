@@ -1,8 +1,11 @@
 const socket = io();
 
+// DOM Elements
 const joinSection = document.getElementById('joinSection');
 const quizSection = document.getElementById('quizSection');
+const scoreSheetSection = document.getElementById('scoreSheetSection');
 const teamNameInput = document.getElementById('teamName');
+const teamDisplayName = document.getElementById('teamDisplayName');
 const joinBtn = document.getElementById('joinBtn');
 const joinError = document.getElementById('joinError');
 const questionText = document.getElementById('questionText');
@@ -10,14 +13,244 @@ const scoreText = document.getElementById('scoreText');
 const attemptStatus = document.getElementById('attemptStatus');
 const waitingText = document.getElementById('waitingText');
 const feedbackText = document.getElementById('feedbackText');
-const leaderboardBody = document.getElementById('leaderboardBody');
+const leaderboard = document.getElementById('leaderboard');
 const stageBadge = document.getElementById('stageBadge');
 const progressText = document.getElementById('progressText');
 const timerEl = document.getElementById('timer');
 const answerButtons = Array.from(document.querySelectorAll('.answer-btn'));
+const scoreSheetBody = document.getElementById('scoreSheetBody');
+
+// Modal Elements
+const answerModal = document.getElementById('answerModal');
+const correctAnswerLetter = document.getElementById('correctAnswerLetter');
+const correctAnswerText = document.getElementById('correctAnswerText');
+const answerExplanation = document.getElementById('answerExplanation');
+const closeAnswerModal = document.getElementById('closeAnswerModal');
+const announcementModal = document.getElementById('announcementModal');
+const announcementCard = document.getElementById('announcementCard');
+const announcementEmoji = document.getElementById('announcementEmoji');
+const announcementTitle = document.getElementById('announcementTitle');
+const announcementWinner = document.getElementById('announcementWinner');
+const announcementMessage = document.getElementById('announcementMessage');
+const closeAnnouncementModal = document.getElementById('closeAnnouncementModal');
 
 let registered = false;
+let registeredTeamName = '';
 let timerInterval;
+let answerModalTimeout;
+let shownWinners = { stage1: null, stage2: null, champion: null };
+let latestStageWinners = { stage1: null, stage2: null };
+let previousRankByTeam = {};
+
+function renderQuestion(question) {
+  if (!question) {
+    questionText.textContent = 'Waiting for question...';
+    answerButtons.forEach((btn, index) => {
+      btn.textContent = String.fromCharCode(65 + index);
+    });
+    return;
+  }
+
+  questionText.textContent = question.text || 'Waiting for question...';
+  answerButtons.forEach((btn, index) => {
+    btn.textContent = question.options[index] || String.fromCharCode(65 + index);
+  });
+}
+
+function resetTeamView() {
+  registered = false;
+  joinSection.classList.remove('hidden');
+  quizSection.classList.add('hidden');
+  scoreSheetSection.style.display = 'none';
+  teamNameInput.value = '';
+  joinError.textContent = '';
+  feedbackText.textContent = '';
+  waitingText.textContent = 'Waiting for teacher to start the next question.';
+  scoreText.textContent = 'Score: 500';
+  attemptStatus.textContent = 'Attempts: 0';
+  stageBadge.textContent = 'Stage 1';
+  progressText.textContent = '';
+  leaderboard.innerHTML = '';
+  previousRankByTeam = {};
+  registeredTeamName = '';
+  teamDisplayName.textContent = '';
+  teamDisplayName.classList.add('hidden');
+  renderScoreSheet([]);
+  renderQuestion(null);
+  setAnswerButtonsEnabled(false);
+  runCountdown(null);
+  closeModal();
+  closeAnnouncement();
+  shownWinners = { stage1: null, stage2: null, champion: null };
+  latestStageWinners = { stage1: null, stage2: null };
+}
+
+function renderLeaderboard(leaderboardData, stageWinners = latestStageWinners) {
+  if (!leaderboardData || leaderboardData.length === 0) {
+    leaderboard.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No teams yet</p>';
+    return;
+  }
+
+  const maxScore = Math.max(...leaderboardData.map(l => l.score || 0), 1000);
+  
+  leaderboard.innerHTML = leaderboardData
+    .map((team, index) => {
+      const percentage = ((team.score || 0) / maxScore) * 100;
+      const isSelf = registeredTeamName && team.name === registeredTeamName;
+      const currentRank = index + 1;
+      const previousRank = previousRankByTeam[team.name] || null;
+      const rankDelta = previousRank ? (previousRank - currentRank) : 0;
+      let barClass = '';
+      let icon = '📝';
+      let rankClass = '';
+      let rankText = '';
+      let tierClass = '';
+      let tierText = '';
+
+      const isStage1Winner = Boolean(stageWinners?.stage1 && team.name === stageWinners.stage1);
+      const isStage2Winner = Boolean(stageWinners?.stage2 && team.name === stageWinners.stage2);
+      const isFinalist = Boolean((team.badge && team.badge.includes('Finalist')) || isStage1Winner || isStage2Winner);
+      
+      if (isStage1Winner) {
+        barClass = 'bar-stage1';
+        tierClass = 'tier-stage1';
+        tierText = 'Stage 1 Winner';
+        icon = '🧠';
+      } else if (isStage2Winner) {
+        barClass = 'bar-stage2';
+        tierClass = 'tier-stage2';
+        tierText = 'Stage 2 Winner';
+        icon = '🧩';
+      } else if (isFinalist) {
+        barClass = 'bar-finalist';
+        tierClass = 'tier-finalist';
+        tierText = 'Finalist';
+        icon = '📘';
+      } else if (team.badge && team.badge.includes('semifinal')) {
+        barClass = 'bar-semi';
+        icon = '✍️';
+      } else if (team.eliminated) {
+        barClass = 'bar-eliminated';
+        icon = '⏳';
+      }
+
+      if (rankDelta > 0) {
+        rankClass = 'rank-chip-up';
+        rankText = `▲ ${rankDelta}`;
+      } else if (rankDelta < 0) {
+        rankClass = 'rank-chip-down';
+        rankText = `▼ ${Math.abs(rankDelta)}`;
+      }
+
+      return `
+        <div class="leaderboard-bar ${isSelf ? 'leaderboard-self' : ''} ${rankClass ? 'rank-shift' : ''} ${tierClass}">
+          <div class="bar-label ${isSelf ? 'bar-label-self' : ''}">
+            <span class="bar-label-team">
+              <span class="bar-label-main">${isSelf ? '🎯' : icon} ${team.name}</span>
+              ${tierText ? `<span class="tier-pill">${tierText}</span>` : ''}
+            </span>
+            ${rankText ? `<span class="rank-chip ${rankClass}">${rankText}</span>` : ''}
+          </div>
+          <div class="bar-wrapper ${isSelf ? 'bar-wrapper-self' : ''}">
+            <div class="bar-fill ${barClass} ${isSelf ? 'bar-self' : ''}" style="width: ${percentage}%;">
+              <span class="bar-score">${team.score}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+
+  previousRankByTeam = Object.fromEntries(leaderboardData.map((team, index) => [team.name, index + 1]));
+}
+
+function renderScoreSheet(rows) {
+  if (!rows || !rows.length) {
+    scoreSheetBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No completed questions yet.</td></tr>';
+    return;
+  }
+
+  scoreSheetSection.style.display = 'block';
+  scoreSheetBody.innerHTML = rows
+    .map((row) => {
+      const correctStatus = row.answer ? (row.correct ? '✓ Correct' : '✗ Wrong') : '-';
+      const pointsText = row.pointsDelta >= 0 ? `+${row.pointsDelta}` : `${row.pointsDelta}`;
+      const pointsClass = row.pointsDelta >= 0 ? 'success-text' : 'error';
+      return `<tr>
+        <td>${row.stage.toUpperCase()}</td>
+        <td>Q${row.questionNumber}</td>
+        <td>${row.answer || '-'}</td>
+        <td>${correctStatus}</td>
+        <td class="${pointsClass}">${pointsText}</td>
+      </tr>`;
+    })
+    .join('');
+}
+
+function showAnswerModal(question) {
+  if (!question) return;
+  
+  const correctLetter = question.correct;
+  const correctIndex = correctLetter.charCodeAt(0) - 65;
+  const correctText = question.options[correctIndex];
+  const explanation = question.explanation || 'Keep practicing to understand this concept better!';
+
+  correctAnswerLetter.textContent = correctLetter;
+  correctAnswerText.textContent = correctText;
+  answerExplanation.textContent = explanation;
+  
+  answerModal.classList.add('active');
+  
+  // Auto-close modal after minimum 15 seconds
+  clearTimeout(answerModalTimeout);
+  answerModalTimeout = setTimeout(() => {
+    closeModal();
+  }, 15000);
+}
+
+function closeModal() {
+  answerModal.classList.remove('active');
+  clearTimeout(answerModalTimeout);
+}
+
+function showAnnouncement(title, message, type = 'stage1', winnerName = '') {
+  closeModal();
+  announcementCard.classList.remove('announce-stage1', 'announce-stage2', 'announce-champion', 'announce-welcome');
+  announcementCard.classList.add(`announce-${type}`);
+
+  if (type === 'stage1') announcementEmoji.textContent = '🧠📘';
+  if (type === 'stage2') announcementEmoji.textContent = '🧩📘';
+  if (type === 'champion') announcementEmoji.textContent = '🎓🏅';
+  if (type === 'welcome') announcementEmoji.textContent = '📝✨';
+
+  announcementTitle.textContent = title;
+  announcementWinner.textContent = winnerName || '';
+  announcementMessage.textContent = message;
+  announcementModal.classList.add('active');
+}
+
+function closeAnnouncement() {
+  announcementModal.classList.remove('active');
+}
+
+function announceWinners(stageWinners, champion, quizCompleted) {
+  if (stageWinners?.stage1 && shownWinners.stage1 !== stageWinners.stage1) {
+    shownWinners.stage1 = stageWinners.stage1;
+    showAnnouncement('🧠 STAGE 1 WINNER ANNOUNCED!', `tops Round 1 and secures the first finalist spot!`, 'stage1', stageWinners.stage1);
+    return;
+  }
+
+  if (stageWinners?.stage2 && shownWinners.stage2 !== stageWinners.stage2) {
+    shownWinners.stage2 = stageWinners.stage2;
+    showAnnouncement('🧩 STAGE 2 WINNER ANNOUNCED!', `wins Round 2 and claims the second finalist position!`, 'stage2', stageWinners.stage2);
+    return;
+  }
+
+  if (quizCompleted && champion && shownWinners.champion !== champion) {
+    shownWinners.champion = champion;
+    showAnnouncement('🎓 QUIZ CHAMPION!', `wins the full quiz challenge. Congratulations!`, 'champion', champion);
+  }
+}
 
 joinBtn.addEventListener('click', () => {
   const teamName = teamNameInput.value.trim();
@@ -28,6 +261,22 @@ answerButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     socket.emit('team:submitAnswer', { answer: btn.dataset.answer });
   });
+});
+
+closeAnswerModal.addEventListener('click', closeModal);
+closeAnnouncementModal.addEventListener('click', closeAnnouncement);
+
+// Close modal on click outside
+answerModal.addEventListener('click', (e) => {
+  if (e.target === answerModal) {
+    closeModal();
+  }
+});
+
+announcementModal.addEventListener('click', (e) => {
+  if (e.target === announcementModal) {
+    closeAnnouncement();
+  }
 });
 
 function setAnswerButtonsEnabled(enabled) {
@@ -53,10 +302,15 @@ function runCountdown(timerEndsAt) {
 
 socket.on('team:registered', ({ teamName }) => {
   registered = true;
+  registeredTeamName = teamName;
+  teamDisplayName.textContent = `Team ${teamName}`;
+  teamDisplayName.classList.remove('hidden');
   joinError.textContent = '';
   joinSection.classList.add('hidden');
   quizSection.classList.remove('hidden');
-  waitingText.textContent = `Welcome ${teamName}. Waiting for teacher...`;
+  waitingText.textContent = `Welcome ${teamName}! 🎉 Waiting for teacher...`;
+  feedbackText.textContent = '';
+  showAnnouncement('🎉 WELCOME TO THE QUIZ!', 'Get ready to compete. Watch leaderboard shifts and answer fast!', 'welcome', teamName);
 });
 
 socket.on('team:error', ({ message }) => {
@@ -66,39 +320,53 @@ socket.on('team:error', ({ message }) => {
 
 socket.on('team:retryOption', ({ allowRetry, retryCost }) => {
   feedbackText.textContent = allowRetry
-    ? `Wrong answer. You may retry once (cost: ${retryCost} points).`
-    : 'Wrong answer. Retry unavailable due to insufficient points.';
+    ? `❌ Wrong answer. You may retry once (cost: ${retryCost} points).`
+    : '❌ Wrong answer. Retry unavailable due to insufficient points.';
 });
 
 socket.on('question:started', ({ question, stage, questionIndex, timerEndsAt }) => {
-  questionText.textContent = question.text;
+  renderQuestion(question);
   feedbackText.textContent = '';
   stageBadge.textContent = stage.toUpperCase();
   progressText.textContent = `Question ${questionIndex + 1}`;
   setAnswerButtonsEnabled(true);
   runCountdown(timerEndsAt);
+  closeModal();
+  closeAnnouncement();
 });
 
-socket.on('question:ended', ({ correctAnswer }) => {
+socket.on('question:ended', ({ correctAnswer, question }) => {
+  renderQuestion(null);
   setAnswerButtonsEnabled(false);
-  feedbackText.textContent = correctAnswer
-    ? `Question ended. Correct answer: ${correctAnswer}`
-    : 'Question ended. Teacher did not set a correct answer.';
+  
+  if (question) {
+    showAnswerModal(question);
+  }
+  
   runCountdown(null);
 });
 
-socket.on('leaderboard:update', ({ leaderboard }) => {
-  leaderboardBody.innerHTML = leaderboard
-    .map((row, i) => `<tr><td>${i + 1}</td><td>${row.name}</td><td>${row.score}</td></tr>`)
-    .join('');
+socket.on('leaderboard:update', ({ leaderboard: leaderboardData }) => {
+socket.on('leaderboard:update', ({ leaderboard: leaderboardData, stageWinners }) => {
+  latestStageWinners = stageWinners || { stage1: null, stage2: null };
+  renderLeaderboard(leaderboardData, latestStageWinners);
 });
 
 socket.on('team:state', (state) => {
+  renderQuestion(state.currentQuestion);
   scoreText.textContent = `Score: ${state.score}`;
-  attemptStatus.textContent = `Attempts: ${state.attemptsUsed}`;
+  attemptStatus.textContent = state.attemptsUsed ? `Attempts Used: ${state.attemptsUsed}` : 'Attempts: Available';
   waitingText.textContent = state.waitingMessage || '';
   stageBadge.textContent = state.stage.toUpperCase();
   progressText.textContent = `Question ${state.questionIndex + 1} / ${state.totalQuestions}`;
-  setAnswerButtonsEnabled(state.canAnswer);
+  setAnswerButtonsEnabled(state.canAnswer && !state.quizCompleted);
   runCountdown(state.timerEndsAt);
+  renderScoreSheet(state.teamScoreSheet || []);
+  announceWinners(state.stageWinners, state.champion, state.quizCompleted);
 });
+
+socket.on('quiz:reset', () => {
+  resetTeamView();
+});
+
+resetTeamView();
