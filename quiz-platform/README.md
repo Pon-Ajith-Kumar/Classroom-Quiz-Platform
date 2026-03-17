@@ -105,9 +105,12 @@ The quiz runs across **three stages**, each with different rules and scoring.
 ### Team View (`/`)
 
 - Enter a team name to join (max 9 teams).
+- Team name now validates strictly (letters, numbers, spaces only).
+- Auto-rejoin remembers the last team name on reconnect/reload.
 - See the current question text and answer with buttons A–D.
 - Countdown timer shows time remaining.
 - Score, attempt count, and feedback messages update in real time.
+- Connection status badge shows live socket connectivity.
 - Live leaderboard visible at all times.
 
 ### Teacher Panel (`/teacher`)
@@ -117,14 +120,21 @@ Controls the entire quiz flow:
 | Button            | Action                                                    |
 |-------------------|-----------------------------------------------------------|
 | Start Question    | Activates current question and starts the 20s timer       |
-| End Question      | Manually closes the question and triggers scoring         |
-| Correct: A/B/C/D  | Selects the correct answer before ending the question     |
 | Next Question     | Advances to the next question within the current stage    |
-| Move to Next Stage| Triggers end-of-stage elimination logic and moves forward |
-| Reset Attempts    | Clears all answers/attempts for the current question      |
+| Next Round        | Triggers end-of-stage elimination logic and moves forward |
+ 
+The teacher controls now use a projector-friendly flow:
+- `Start Question` can be used only once per question.
+- If a completed question is started again, a popup warns that the question is already completed.
+- `Next Question` is enabled only after the current question has been asked.
+- `Next Round` asks for confirmation before proceeding.
+
+Keyboard shortcuts on teacher panel:
+- `S` = Start Question
+- `N` = Next Question
+- `R` = Next Round
 
 The teacher panel also shows:
-- The current question text and active/idle status.
 - A live table of all team answers, attempt counts, timestamps, and correctness.
 - The full leaderboard with each team's score and elimination status.
 - The finalists and stage winners when determined.

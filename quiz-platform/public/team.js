@@ -8,6 +8,7 @@ const teamNameInput = document.getElementById('teamName');
 const teamDisplayName = document.getElementById('teamDisplayName');
 const joinBtn = document.getElementById('joinBtn');
 const joinError = document.getElementById('joinError');
+const connectionStatus = document.getElementById('connectionStatus');
 const questionText = document.getElementById('questionText');
 const scoreText = document.getElementById('scoreText');
 const attemptStatus = document.getElementById('attemptStatus');
@@ -40,7 +41,38 @@ let timerInterval;
 let answerModalTimeout;
 let shownWinners = { stage1: null, stage2: null, champion: null };
 let latestStageWinners = { stage1: null, stage2: null };
-let previousRankByTeam = {};
+let previousRankByStage = { stage1: {}, stage2: {}, stage3: {} };
+const TEAM_NAME_STORAGE_KEY = 'quiz.teamName';
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function setConnectionStatus(isConnected) {
+  connectionStatus.textContent = isConnected ? 'Connected' : 'Disconnected';
+  connectionStatus.classList.toggle('connected', isConnected);
+  connectionStatus.classList.toggle('disconnected', !isConnected);
+}
+
+function setInstructionTone(element, tone) {
+  element.classList.remove('instruction-waiting', 'instruction-wrong', 'instruction-correct');
+  element.classList.add(`instruction-${tone}`);
+}
+
+function getWaitingTone(message) {
+  const text = String(message || '').toLowerCase();
+  if (!text) return 'waiting';
+  if (text.includes('correct answer locked in')) return 'correct';
+  if (text.includes('wrong') || text.includes('retry unavailable') || text.includes('used your only attempt') || text.includes('used all attempts') || text.includes('no attempts remaining')) {
+    return 'wrong';
+  }
+  return 'waiting';
+}
 
 function renderQuestion(question) {
   if (!question) {
@@ -66,12 +98,14 @@ function resetTeamView() {
   joinError.textContent = '';
   feedbackText.textContent = '';
   waitingText.textContent = 'Waiting for teacher to start the next question.';
+  setInstructionTone(waitingText, 'waiting');
+  setInstructionTone(feedbackText, 'waiting');
   scoreText.textContent = 'Score: 500';
   attemptStatus.textContent = 'Attempts: 0';
   stageBadge.textContent = 'Stage 1';
   progressText.textContent = '';
   leaderboard.innerHTML = '';
-  previousRankByTeam = {};
+  previousRankByStage = { stage1: {}, stage2: {}, stage3: {} };
   registeredTeamName = '';
   teamDisplayName.textContent = '';
   teamDisplayName.classList.add('hidden');
@@ -85,7 +119,7 @@ function resetTeamView() {
   latestStageWinners = { stage1: null, stage2: null };
 }
 
-function renderLeaderboard(leaderboardData, stageWinners = latestStageWinners) {
+function renderLeaderboard(leaderboardData, stageWinners = latestStageWinners, stageKey = 'stage1') {
   if (!leaderboardData || leaderboardData.length === 0) {
     leaderboard.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No teams yet</p>';
     return;
@@ -98,7 +132,8 @@ function renderLeaderboard(leaderboardData, stageWinners = latestStageWinners) {
       const percentage = ((team.score || 0) / maxScore) * 100;
       const isSelf = registeredTeamName && team.name === registeredTeamName;
       const currentRank = index + 1;
-      const previousRank = previousRankByTeam[team.name] || null;
+      const stageRanks = previousRankByStage[stageKey] || {};
+      const previousRank = stageRanks[team.name] || null;
       const rankDelta = previousRank ? (previousRank - currentRank) : 0;
       let barClass = '';
       let icon = '📝';
@@ -142,14 +177,18 @@ function renderLeaderboard(leaderboardData, stageWinners = latestStageWinners) {
         rankText = `▼ ${Math.abs(rankDelta)}`;
       }
 
+      const safeName = escapeHtml(team.name);
+      const safeTierText = escapeHtml(tierText);
+      const safeRankText = escapeHtml(rankText);
+
       return `
         <div class="leaderboard-bar ${isSelf ? 'leaderboard-self' : ''} ${rankClass ? 'rank-shift' : ''} ${tierClass}">
           <div class="bar-label ${isSelf ? 'bar-label-self' : ''}">
             <span class="bar-label-team">
-              <span class="bar-label-main">${isSelf ? '🎯' : icon} ${team.name}</span>
-              ${tierText ? `<span class="tier-pill">${tierText}</span>` : ''}
+              <span class="bar-label-main">${isSelf ? '🎯' : icon} ${safeName}</span>
+              ${tierText ? `<span class="tier-pill">${safeTierText}</span>` : ''}
             </span>
-            ${rankText ? `<span class="rank-chip ${rankClass}">${rankText}</span>` : ''}
+            ${rankText ? `<span class="rank-chip ${rankClass}">${safeRankText}</span>` : ''}
           </div>
           <div class="bar-wrapper ${isSelf ? 'bar-wrapper-self' : ''}">
             <div class="bar-fill ${barClass} ${isSelf ? 'bar-self' : ''}" style="width: ${percentage}%;">
@@ -161,7 +200,7 @@ function renderLeaderboard(leaderboardData, stageWinners = latestStageWinners) {
     })
     .join('');
 
-  previousRankByTeam = Object.fromEntries(leaderboardData.map((team, index) => [team.name, index + 1]));
+  previousRankByStage[stageKey] = Object.fromEntries(leaderboardData.map((team, index) => [team.name, index + 1]));
 }
 
 function renderScoreSheet(rows) {
@@ -176,11 +215,14 @@ function renderScoreSheet(rows) {
       const correctStatus = row.answer ? (row.correct ? '✓ Correct' : '✗ Wrong') : '-';
       const pointsText = row.pointsDelta >= 0 ? `+${row.pointsDelta}` : `${row.pointsDelta}`;
       const pointsClass = row.pointsDelta >= 0 ? 'success-text' : 'error';
+      const safeStage = escapeHtml(String(row.stage || '').toUpperCase());
+      const safeAnswer = escapeHtml(row.answer || '-');
+      const safeCorrectStatus = escapeHtml(correctStatus);
       return `<tr>
-        <td>${row.stage.toUpperCase()}</td>
+        <td>${safeStage}</td>
         <td>Q${row.questionNumber}</td>
-        <td>${row.answer || '-'}</td>
-        <td>${correctStatus}</td>
+        <td>${safeAnswer}</td>
+        <td>${safeCorrectStatus}</td>
         <td class="${pointsClass}">${pointsText}</td>
       </tr>`;
     })
@@ -252,9 +294,35 @@ function announceWinners(stageWinners, champion, quizCompleted) {
   }
 }
 
+function tryRegister(teamName) {
+  const normalized = String(teamName || '').trim();
+  if (!normalized) {
+    joinError.textContent = 'Team name is required.';
+    return;
+  }
+
+  joinError.textContent = '';
+  socket.emit('team:register', { teamName: normalized });
+}
+
+function attemptAutoReconnect() {
+  if (registered) return;
+  const savedTeamName = localStorage.getItem(TEAM_NAME_STORAGE_KEY) || '';
+  if (!savedTeamName) return;
+
+  teamNameInput.value = savedTeamName;
+  tryRegister(savedTeamName);
+}
+
 joinBtn.addEventListener('click', () => {
-  const teamName = teamNameInput.value.trim();
-  socket.emit('team:register', { teamName });
+  tryRegister(teamNameInput.value);
+});
+
+teamNameInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    tryRegister(teamNameInput.value);
+  }
 });
 
 answerButtons.forEach((btn) => {
@@ -303,30 +371,42 @@ function runCountdown(timerEndsAt) {
 socket.on('team:registered', ({ teamName }) => {
   registered = true;
   registeredTeamName = teamName;
+  localStorage.setItem(TEAM_NAME_STORAGE_KEY, teamName);
   teamDisplayName.textContent = `Team ${teamName}`;
   teamDisplayName.classList.remove('hidden');
   joinError.textContent = '';
   joinSection.classList.add('hidden');
   quizSection.classList.remove('hidden');
   waitingText.textContent = `Welcome ${teamName}! 🎉 Waiting for teacher...`;
+  setInstructionTone(waitingText, 'waiting');
   feedbackText.textContent = '';
+  setInstructionTone(feedbackText, 'waiting');
   showAnnouncement('🎉 WELCOME TO THE QUIZ!', 'Get ready to compete. Watch leaderboard shifts and answer fast!', 'welcome', teamName);
 });
 
 socket.on('team:error', ({ message }) => {
+  if (typeof message === 'string' && message.includes('cannot join after the quiz has started')) {
+    localStorage.removeItem(TEAM_NAME_STORAGE_KEY);
+  }
+
   if (!registered) joinError.textContent = message;
-  else feedbackText.textContent = message;
+  else {
+    feedbackText.textContent = message;
+    setInstructionTone(feedbackText, 'wrong');
+  }
 });
 
 socket.on('team:retryOption', ({ allowRetry, retryCost }) => {
   feedbackText.textContent = allowRetry
     ? `❌ Wrong answer. You may retry once (cost: ${retryCost} points).`
     : '❌ Wrong answer. Retry unavailable due to insufficient points.';
+  setInstructionTone(feedbackText, 'wrong');
 });
 
 socket.on('question:started', ({ question, stage, questionIndex, timerEndsAt }) => {
   renderQuestion(question);
   feedbackText.textContent = '';
+  setInstructionTone(feedbackText, 'waiting');
   stageBadge.textContent = stage.toUpperCase();
   progressText.textContent = `Question ${questionIndex + 1}`;
   setAnswerButtonsEnabled(true);
@@ -346,10 +426,9 @@ socket.on('question:ended', ({ correctAnswer, question }) => {
   runCountdown(null);
 });
 
-socket.on('leaderboard:update', ({ leaderboard: leaderboardData }) => {
-socket.on('leaderboard:update', ({ leaderboard: leaderboardData, stageWinners }) => {
+socket.on('leaderboard:update', ({ leaderboard: leaderboardData, stageWinners, stage }) => {
   latestStageWinners = stageWinners || { stage1: null, stage2: null };
-  renderLeaderboard(leaderboardData, latestStageWinners);
+  renderLeaderboard(leaderboardData, latestStageWinners, stage || 'stage1');
 });
 
 socket.on('team:state', (state) => {
@@ -357,6 +436,7 @@ socket.on('team:state', (state) => {
   scoreText.textContent = `Score: ${state.score}`;
   attemptStatus.textContent = state.attemptsUsed ? `Attempts Used: ${state.attemptsUsed}` : 'Attempts: Available';
   waitingText.textContent = state.waitingMessage || '';
+  setInstructionTone(waitingText, getWaitingTone(state.waitingMessage));
   stageBadge.textContent = state.stage.toUpperCase();
   progressText.textContent = `Question ${state.questionIndex + 1} / ${state.totalQuestions}`;
   setAnswerButtonsEnabled(state.canAnswer && !state.quizCompleted);
@@ -367,6 +447,22 @@ socket.on('team:state', (state) => {
 
 socket.on('quiz:reset', () => {
   resetTeamView();
+  localStorage.removeItem(TEAM_NAME_STORAGE_KEY);
+});
+
+socket.on('connect', () => {
+  setConnectionStatus(true);
+  attemptAutoReconnect();
+});
+
+socket.on('disconnect', () => {
+  setConnectionStatus(false);
+});
+
+socket.on('connect_error', () => {
+  setConnectionStatus(false);
 });
 
 resetTeamView();
+setConnectionStatus(socket.connected);
+attemptAutoReconnect();

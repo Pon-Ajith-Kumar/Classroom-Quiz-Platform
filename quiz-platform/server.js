@@ -10,6 +10,7 @@ const io = new Server(server);
 
 const PORT = 3000;
 const MAX_TEAMS = 9;
+const TEAM_NAME_MAX_LENGTH = 30;
 const ANSWER_OPTIONS = new Set(['A', 'B', 'C', 'D']);
 
 const questions = JSON.parse(
@@ -81,6 +82,7 @@ function createInitialState() {
     teams: {},
     socketsByTeam: {},
     answersByQuestion: {},
+    completedQuestionKeys: {},
     questionHistory: [],
     stageWinners: { stage1: null, stage2: null },
     tieBreakResolvedWinnerByStage: { stage1: null, stage2: null, stage3: null },
@@ -97,6 +99,22 @@ function createInitialState() {
 
 function normalizeTeamName(teamName) {
   return (teamName || '').trim().replace(/\s+/g, ' ');
+}
+
+function validateTeamName(teamName) {
+  if (!teamName) {
+    return 'Team name is required.';
+  }
+
+  if (teamName.length > TEAM_NAME_MAX_LENGTH) {
+    return `Team name must be ${TEAM_NAME_MAX_LENGTH} characters or fewer.`;
+  }
+
+  if (!/^[a-zA-Z0-9 ]+$/.test(teamName)) {
+    return 'Team name can only contain letters, numbers, and spaces.';
+  }
+
+  return null;
 }
 
 function findStoredTeamName(inputName) {
@@ -363,6 +381,7 @@ function buildWaitingMessage(team) {
 function emitState() {
   const question = sanitizeQuestion(getCurrentQuestion());
   const questionKey = getQuestionKey();
+  const questionCompleted = Boolean(quizState.completedQuestionKeys[questionKey]);
   const leaderboard = buildLeaderboard();
   const champion = quizState.quizCompleted && leaderboard.length ? leaderboard[0].name : null;
 
@@ -424,6 +443,7 @@ function emitState() {
       champion,
       timerEndsAt: quizState.timerEndsAt,
       tieBreakActive: quizState.tieBreak.active,
+      questionCompleted,
       quizCompleted: quizState.quizCompleted,
       consolidatedHistory: quizState.questionHistory
     });
@@ -699,6 +719,8 @@ function finalizeQuestion(selectedCorrectAnswer) {
     quizState.questionEndTs
   );
 
+  quizState.completedQuestionKeys[questionKeyAtFinalize] = true;
+
   io.emit('question:ended', {
     correctAnswer,
     stage: quizState.stage,
@@ -832,6 +854,11 @@ function startQuestion() {
     return { ok: false, error: 'No question found for the current stage.' };
   }
 
+  const questionKey = getQuestionKey();
+  if (quizState.completedQuestionKeys[questionKey]) {
+    return { ok: false, error: 'This question is already completed. Please move to the next question.' };
+  }
+
   ensureQuestionBucket();
   clearQuestionTimer();
 
@@ -844,7 +871,6 @@ function startQuestion() {
     ? Date.now() + timeLimitSeconds * 1000
     : null;
 
-  const questionKey = getQuestionKey();
   Object.values(quizState.teams).forEach((team) => {
     if (typeof team.attemptsByQuestion[questionKey] !== 'number') {
       team.attemptsByQuestion[questionKey] = 0;
@@ -901,8 +927,10 @@ app.get('/teacher', (req, res) => {
 io.on('connection', (socket) => {
   socket.on('team:register', ({ teamName }) => {
     const normalized = normalizeTeamName(teamName);
-    if (!normalized) {
-      socket.emit('team:error', { message: 'Team name is required.' });
+    const teamNameError = validateTeamName(normalized);
+
+    if (teamNameError) {
+      socket.emit('team:error', { message: teamNameError });
       return;
     }
 

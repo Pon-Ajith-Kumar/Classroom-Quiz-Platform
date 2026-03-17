@@ -1,17 +1,21 @@
 const socket = io();
 
-// DOM Elements
 const stageEl = document.getElementById('teacherStage');
 const progressEl = document.getElementById('teacherProgress');
-const questionLabel = document.getElementById('questionLabel');
 const teacherLeaderboard = document.getElementById('teacherLeaderboard');
 const answersBody = document.getElementById('answersBody');
-const finalistsText = document.getElementById('finalistsText');
-const winnerText = document.getElementById('winnerText');
+const leaderboardTopRow = document.getElementById('leaderboardTopRow');
+const stage1WinnerTile = document.getElementById('stage1WinnerTile');
+const finalVsTile = document.getElementById('finalVsTile');
+const stage2WinnerTile = document.getElementById('stage2WinnerTile');
 const teacherError = document.getElementById('teacherError');
 const teacherTimer = document.getElementById('teacherTimer');
+const teacherConnectionStatus = document.getElementById('teacherConnectionStatus');
 
-// Modal Elements
+const startQuestionBtn = document.getElementById('startQuestionBtn');
+const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+const nextStageBtn = document.getElementById('nextStageBtn');
+
 const answerModal = document.getElementById('answerModal');
 const correctAnswerLetter = document.getElementById('correctAnswerLetter');
 const correctAnswerText = document.getElementById('correctAnswerText');
@@ -28,46 +32,155 @@ const closeAnnouncementModal = document.getElementById('closeAnnouncementModal')
 let timerInterval;
 let answerModalTimeout;
 let shownWinners = { stage1: null, stage2: null, champion: null };
+let previousRankByStage = { stage1: {}, stage2: {}, stage3: {} };
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function setConnectionStatus(isConnected) {
+  teacherConnectionStatus.textContent = isConnected ? 'Connected' : 'Disconnected';
+  teacherConnectionStatus.classList.toggle('connected', isConnected);
+  teacherConnectionStatus.classList.toggle('disconnected', !isConnected);
+}
+
+function showPopupMessage(message) {
+  alert(message);
+}
+
+function updateControlButtons({ questionActive, questionCompleted, currentQuestion, quizCompleted }) {
+  const hasQuestion = Boolean(currentQuestion);
+  const hasBeenAsked = Boolean(questionActive || questionCompleted);
+
+  startQuestionBtn.disabled = Boolean(quizCompleted || !hasQuestion || questionActive || questionCompleted);
+  nextQuestionBtn.disabled = Boolean(quizCompleted || !hasQuestion || !hasBeenAsked);
+  nextStageBtn.disabled = Boolean(quizCompleted);
+}
+
+function updateLeaderboardInfo(stage, finalists, stageWinners) {
+  leaderboardTopRow.style.display = 'none';
+  stage1WinnerTile.style.display = 'none';
+  finalVsTile.style.display = 'none';
+  stage2WinnerTile.style.display = 'none';
+
+  if (stage === 'stage2') {
+    leaderboardTopRow.style.display = 'grid';
+    stage1WinnerTile.style.display = 'block';
+    stage1WinnerTile.textContent = `🧠 Stage 1 Winner: ${stageWinners.stage1 || '-'}`;
+    return;
+  }
+
+  if (stage === 'stage3') {
+    const leftName = stageWinners.stage1 || finalists[0] || '-';
+    const rightName = stageWinners.stage2 || finalists[1] || '-';
+
+    leaderboardTopRow.style.display = 'grid';
+    stage1WinnerTile.style.display = 'block';
+    finalVsTile.style.display = 'flex';
+    stage2WinnerTile.style.display = 'block';
+
+    stage1WinnerTile.textContent = `🧠 ${leftName}`;
+    stage2WinnerTile.textContent = `🧩 ${rightName}`;
+  }
+}
 
 function resetTeacherView() {
   teacherError.textContent = '';
   stageEl.textContent = 'Stage 1';
   progressEl.textContent = 'Q1 / 1';
-  questionLabel.textContent = 'Current Question: Waiting...';
   teacherLeaderboard.innerHTML = '';
   answersBody.innerHTML = '';
-  finalistsText.textContent = 'Finalists not decided yet.';
-  winnerText.textContent = 'Stage 1 Winner: - | Stage 2 Winner: -';
+  leaderboardTopRow.style.display = 'none';
+  stage1WinnerTile.textContent = '';
+  stage2WinnerTile.textContent = '';
   runCountdown(null);
   closeModal();
   closeAnnouncement();
   shownWinners = { stage1: null, stage2: null, champion: null };
+  previousRankByStage = { stage1: {}, stage2: {}, stage3: {} };
+  updateControlButtons({
+    questionActive: false,
+    questionCompleted: false,
+    currentQuestion: { id: 'placeholder' },
+    quizCompleted: false
+  });
 }
 
-function renderLeaderboard(leaderboard) {
+function renderLeaderboard(leaderboard, stageWinners = { stage1: null, stage2: null }, stageKey = 'stage1') {
   if (!leaderboard || leaderboard.length === 0) {
     teacherLeaderboard.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No teams yet</p>';
     return;
   }
 
-  const maxScore = Math.max(...leaderboard.map(l => l.score || 0), 1000);
-  
+  const maxScore = Math.max(...leaderboard.map((entry) => entry.score || 0), 1000);
+
   teacherLeaderboard.innerHTML = leaderboard
     .map((team, index) => {
       const percentage = ((team.score || 0) / maxScore) * 100;
+      const currentRank = index + 1;
+      const stageRanks = previousRankByStage[stageKey] || {};
+      const previousRank = stageRanks[team.name] || null;
+      const rankDelta = previousRank ? (previousRank - currentRank) : 0;
       let barClass = '';
-      
-      if (team.badge && team.badge.includes('Finalist')) {
+      let tierClass = '';
+      let tierText = '';
+      let icon = '📝';
+      let rankClass = '';
+      let rankText = '';
+
+      const isStage1Winner = Boolean(stageWinners?.stage1 && team.name === stageWinners.stage1);
+      const isStage2Winner = Boolean(stageWinners?.stage2 && team.name === stageWinners.stage2);
+      const isFinalist = Boolean((team.badge && team.badge.includes('Finalist')) || isStage1Winner || isStage2Winner);
+
+      if (isStage1Winner) {
+        barClass = 'bar-stage1';
+        tierClass = 'tier-stage1';
+        tierText = 'Stage 1 Winner';
+        icon = '🧠';
+      } else if (isStage2Winner) {
+        barClass = 'bar-stage2';
+        tierClass = 'tier-stage2';
+        tierText = 'Stage 2 Winner';
+        icon = '🧩';
+      } else if (isFinalist) {
         barClass = 'bar-finalist';
+        tierClass = 'tier-finalist';
+        tierText = 'Finalist';
+        icon = '📘';
       } else if (team.badge && team.badge.includes('semifinal')) {
         barClass = 'bar-semi';
+        icon = '✍️';
       } else if (team.eliminated) {
         barClass = 'bar-eliminated';
+        icon = '⏳';
       }
 
+      if (rankDelta > 0) {
+        rankClass = 'rank-chip-up';
+        rankText = `▲ ${rankDelta}`;
+      } else if (rankDelta < 0) {
+        rankClass = 'rank-chip-down';
+        rankText = `▼ ${Math.abs(rankDelta)}`;
+      }
+
+      const safeName = escapeHtml(team.name);
+      const safeTierText = escapeHtml(tierText);
+      const safeRankText = escapeHtml(rankText);
+
       return `
-        <div class="leaderboard-bar">
-          <div class="bar-label">${index + 1}. ${team.name}</div>
+        <div class="leaderboard-bar ${tierClass} ${rankClass ? 'rank-shift' : ''}">
+          <div class="bar-label">
+            <span class="bar-label-team">
+              <span class="bar-label-main">${currentRank}. ${icon} ${safeName}</span>
+              ${tierText ? `<span class="tier-pill">${safeTierText}</span>` : ''}
+            </span>
+            ${rankText ? `<span class="rank-chip ${rankClass}">${safeRankText}</span>` : ''}
+          </div>
           <div class="bar-wrapper">
             <div class="bar-fill ${barClass}" style="width: ${percentage}%;">
               <span class="bar-score">${team.score}</span>
@@ -77,6 +190,8 @@ function renderLeaderboard(leaderboard) {
       `;
     })
     .join('');
+
+  previousRankByStage[stageKey] = Object.fromEntries(leaderboard.map((team, index) => [team.name, index + 1]));
 }
 
 function runCountdown(timerEndsAt) {
@@ -95,7 +210,7 @@ function runCountdown(timerEndsAt) {
 
 function showAnswerModal(question) {
   if (!question) return;
-  
+
   const correctLetter = question.correct;
   const correctIndex = correctLetter.charCodeAt(0) - 65;
   const correctText = question.options[correctIndex];
@@ -104,10 +219,9 @@ function showAnswerModal(question) {
   correctAnswerLetter.textContent = correctLetter;
   correctAnswerText.textContent = correctText;
   answerExplanation.textContent = explanation;
-  
+
   answerModal.classList.add('active');
-  
-  // Auto-close modal after minimum 15 seconds
+
   clearTimeout(answerModalTimeout);
   answerModalTimeout = setTimeout(() => {
     closeModal();
@@ -124,9 +238,9 @@ function showAnnouncement(title, message, type = 'stage1', winnerName = '') {
   announcementCard.classList.remove('announce-stage1', 'announce-stage2', 'announce-champion', 'announce-welcome');
   announcementCard.classList.add(`announce-${type}`);
 
-  if (type === 'stage1') announcementEmoji.textContent = '🏆✨';
-  if (type === 'stage2') announcementEmoji.textContent = '🥈🔥';
-  if (type === 'champion') announcementEmoji.textContent = '👑🎉';
+  if (type === 'stage1') announcementEmoji.textContent = '🧠📘';
+  if (type === 'stage2') announcementEmoji.textContent = '🧩📘';
+  if (type === 'champion') announcementEmoji.textContent = '🎓🏅';
 
   announcementTitle.textContent = title;
   announcementWinner.textContent = winnerName || '';
@@ -138,61 +252,77 @@ function closeAnnouncement() {
   announcementModal.classList.remove('active');
 }
 
-closeAnswerModal.addEventListener('click', closeModal);
-closeAnnouncementModal.addEventListener('click', closeAnnouncement);
-
-document.getElementById('startQuestionBtn').addEventListener('click', () => {
-  closeModal();
-  closeAnnouncement();
-  socket.emit('teacher:startQuestion');
-});
-
-document.getElementById('nextQuestionBtn').addEventListener('click', () => {
-  closeModal();
-  closeAnnouncement();
-  socket.emit('teacher:nextQuestion');
-});
-
-document.getElementById('nextStageBtn').addEventListener('click', () => {
-  closeModal();
-  closeAnnouncement();
-  socket.emit('teacher:nextStage');
-});
-
-// Close modal on click outside
-answerModal.addEventListener('click', (e) => {
-  if (e.target === answerModal) {
-    closeModal();
-  }
-});
-
-announcementModal.addEventListener('click', (e) => {
-  if (e.target === announcementModal) {
-    closeAnnouncement();
-  }
-});
-
 function announceWinners(stageWinners, champion, quizCompleted) {
   if (stageWinners?.stage1 && shownWinners.stage1 !== stageWinners.stage1) {
     shownWinners.stage1 = stageWinners.stage1;
-    showAnnouncement('🏆 STAGE 1 FINALIST SELECTED!', `has dominated Round 1 and secures the first finalist spot!`, 'stage1', stageWinners.stage1);
+    showAnnouncement('🧠 STAGE 1 WINNER ANNOUNCED!', 'tops Round 1 and secures the first finalist spot!', 'stage1', stageWinners.stage1);
     return;
   }
 
   if (stageWinners?.stage2 && shownWinners.stage2 !== stageWinners.stage2) {
     shownWinners.stage2 = stageWinners.stage2;
-    showAnnouncement('🥈 STAGE 2 FINALIST SELECTED!', `fights through Round 2 and claims the second finalist position!`, 'stage2', stageWinners.stage2);
+    showAnnouncement('🧩 STAGE 2 WINNER ANNOUNCED!', 'wins Round 2 and claims the second finalist position!', 'stage2', stageWinners.stage2);
     return;
   }
 
   if (quizCompleted && champion && shownWinners.champion !== champion) {
     shownWinners.champion = champion;
-    showAnnouncement('👑 GRAND CHAMPION!', `is the ultimate winner of this quiz battle. Congratulations!`, 'champion', champion);
+    showAnnouncement('🎓 QUIZ CHAMPION!', 'wins the full quiz challenge. Congratulations!', 'champion', champion);
   }
 }
 
+closeAnswerModal.addEventListener('click', closeModal);
+closeAnnouncementModal.addEventListener('click', closeAnnouncement);
+
+startQuestionBtn.addEventListener('click', () => {
+  closeModal();
+  closeAnnouncement();
+  socket.emit('teacher:startQuestion');
+});
+
+nextQuestionBtn.addEventListener('click', () => {
+  closeModal();
+  closeAnnouncement();
+  socket.emit('teacher:nextQuestion');
+});
+
+nextStageBtn.addEventListener('click', () => {
+  closeModal();
+  closeAnnouncement();
+
+  if (confirm('Do you want to proceed to the next round?')) {
+    socket.emit('teacher:nextStage');
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.target && ['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return;
+
+  if ((event.key === 's' || event.key === 'S') && !startQuestionBtn.disabled) {
+    socket.emit('teacher:startQuestion');
+  } else if ((event.key === 'n' || event.key === 'N') && !nextQuestionBtn.disabled) {
+    socket.emit('teacher:nextQuestion');
+  } else if ((event.key === 'r' || event.key === 'R') && !nextStageBtn.disabled) {
+    if (confirm('Do you want to proceed to the next round?')) {
+      socket.emit('teacher:nextStage');
+    }
+  }
+});
+
+answerModal.addEventListener('click', (event) => {
+  if (event.target === answerModal) closeModal();
+});
+
+announcementModal.addEventListener('click', (event) => {
+  if (event.target === announcementModal) closeAnnouncement();
+});
+
 socket.on('teacher:error', ({ message }) => {
   teacherError.textContent = message;
+
+  if (typeof message === 'string' && message.includes('already completed')) {
+    showPopupMessage('This question is already completed. Please click Next Question.');
+  }
 });
 
 socket.on('teacher:state', ({
@@ -207,49 +337,67 @@ socket.on('teacher:state', ({
   stageWinners,
   champion,
   timerEndsAt,
+  questionCompleted,
   quizCompleted
 }) => {
   stageEl.textContent = stage.toUpperCase();
   progressEl.textContent = `Q${questionIndex + 1} / ${totalQuestions}`;
-  questionLabel.textContent = currentQuestion
-    ? `Current Question: ${currentQuestion.text} ${questionActive ? '(Active)' : '(Idle)'}`
-    : 'Current Question: N/A';
 
-  renderLeaderboard(leaderboard);
+  renderLeaderboard(leaderboard, stageWinners, stage);
 
   answersBody.innerHTML = answerRows
     .map((row) => {
       const t = row.ts ? new Date(row.ts).toLocaleTimeString() : '-';
       const correct = row.correct === null ? '-' : row.correct ? '✓ Yes' : '✗ No';
-      return `<tr><td>${row.teamName}</td><td>${row.answer || '-'}</td><td>${row.attempts || 0}</td><td>${t}</td><td>${correct}</td></tr>`;
+      const safeTeamName = escapeHtml(row.teamName || '-');
+      const safeAnswer = escapeHtml(row.answer || '-');
+      const safeCorrect = escapeHtml(correct);
+      return `<tr><td>${safeTeamName}</td><td>${safeAnswer}</td><td>${row.attempts || 0}</td><td>${t}</td><td>${safeCorrect}</td></tr>`;
     })
     .join('');
 
-  finalistsText.textContent = finalists.length
-    ? `🏆 Finalists: ${finalists.join(' 💪 ')}`
-    : 'Finalists not decided yet.';
+  updateLeaderboardInfo(stage, finalists, stageWinners);
 
-  winnerText.textContent = `🥇 Stage 1 Winner: ${stageWinners.stage1 || '-'} | 🥈 Stage 2 Winner: ${stageWinners.stage2 || '-'}`;
-  
   if (quizCompleted) {
-    teacherError.textContent = '🎉 Quiz completed!';
+    teacherError.textContent = '✅ Quiz completed!';
   }
 
   announceWinners(stageWinners, champion, quizCompleted);
-  
+
+  updateControlButtons({
+    questionActive,
+    questionCompleted,
+    currentQuestion,
+    quizCompleted
+  });
+
   runCountdown(timerEndsAt);
 });
 
-socket.on('question:ended', ({ correctAnswer, question }) => {
-  if (question) {
-    showAnswerModal(question);
-  }
+socket.on('question:ended', ({ question }) => {
+  if (question) showAnswerModal(question);
 });
 
 socket.on('quiz:reset', () => {
   resetTeacherView();
 });
 
-socket.emit('teacher:register');
+socket.on('connect', () => {
+  setConnectionStatus(true);
+  socket.emit('teacher:register');
+});
+
+socket.on('disconnect', () => {
+  setConnectionStatus(false);
+});
+
+socket.on('connect_error', () => {
+  setConnectionStatus(false);
+});
 
 resetTeacherView();
+setConnectionStatus(socket.connected);
+
+if (socket.connected) {
+  socket.emit('teacher:register');
+}

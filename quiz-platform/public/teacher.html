@@ -8,28 +8,33 @@
 </head>
 <body>
   <main class="container">
-    <h1>🎯 Quiz Control Panel</h1>
+    <div class="teacher-hero">
+      <h1>🎯 Quiz Control Panel</h1>
+      <p id="teacherConnectionStatus" class="connection-chip">Connecting...</p>
+    </div>
 
     <section class="card controls">
       <div class="status-row">
         <span id="teacherStage" class="badge">Stage 1</span>
         <span id="teacherProgress">Q1 / 10</span>
       </div>
-      <div class="button-row">
-        <button id="startQuestionBtn">▶ Start Question</button>
-        <button id="nextQuestionBtn">⏭ Next Question</button>
-        <button id="nextStageBtn">🎭 Next Round</button>
+      <div class="button-row teacher-button-row">
+        <button id="startQuestionBtn" class="teacher-control-btn btn-start">▶ Start Question</button>
+        <button id="nextQuestionBtn" class="teacher-control-btn btn-next">⏭ Next Question</button>
+        <button id="nextStageBtn" class="teacher-control-btn btn-round">🎭 Next Round</button>
       </div>
-      <p id="questionLabel">Current Question: Waiting...</p>
       <p id="teacherTimer" class="timer">--</p>
       <p id="teacherError" class="error"></p>
     </section>
 
     <section class="card">
-      <h2>📊 Live Leaderboard</h2>
+      <h2>🧠 Live Quiz Leaderboard</h2>
+      <div id="leaderboardTopRow" class="leaderboard-top-row">
+        <div id="stage1WinnerTile" class="result-tile"></div>
+        <div id="finalVsTile" class="result-tile result-tile-vs">VS</div>
+        <div id="stage2WinnerTile" class="result-tile"></div>
+      </div>
       <div class="leaderboard-container" id="teacherLeaderboard"></div>
-      <p id="finalistsText" class="info-text"></p>
-      <p id="winnerText" class="info-text"></p>
     </section>
 
     <section class="card">
@@ -68,7 +73,7 @@
   <div class="modal-overlay" id="announcementModal">
     <div class="modal-content announcement-modal" id="announcementCard">
       <div class="modal-header">
-        <div class="announcement-emoji" id="announcementEmoji">🏆</div>
+        <div class="announcement-emoji" id="announcementEmoji">🧠</div>
         <h3 class="modal-title" id="announcementTitle">Winner Update</h3>
       </div>
       <div class="modal-body">

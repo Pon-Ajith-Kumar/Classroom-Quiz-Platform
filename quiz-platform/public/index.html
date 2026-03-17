@@ -10,7 +10,10 @@
   <main class="container team-container">
     <header class="team-hero">
       <h1>🎮 Quiz Challenge</h1>
-      <p id="teamDisplayName" class="team-display hidden"></p>
+      <div class="team-meta">
+        <p id="connectionStatus" class="connection-chip">Connecting...</p>
+        <p id="teamDisplayName" class="team-display hidden"></p>
+      </div>
     </header>
 
     <section id="joinSection" class="card">
@@ -21,9 +24,10 @@
     </section>
 
     <section id="quizSection" class="card hidden">
-      <div class="status-row">
+      <div class="status-row status-row-quiz">
         <span id="stageBadge" class="badge">Stage 1</span>
-        <span id="progressText"></span>
+        <span id="scoreText" class="score-pill">Score: 500</span>
+        <span id="progressText" class="progress-chip"></span>
       </div>
       <h2 id="questionText">Waiting for question...</h2>
       <div id="timer" class="timer">--</div>
@@ -33,14 +37,13 @@
         <button class="answer-btn" data-answer="C">C</button>
         <button class="answer-btn" data-answer="D">D</button>
       </div>
-      <p id="attemptStatus"></p>
-      <p id="waitingText" class="muted">Waiting for teacher to start the next question.</p>
-      <p id="feedbackText"></p>
-      <h3 id="scoreText">Score: 500</h3>
+      <p id="attemptStatus" class="attempt-status-line"></p>
+      <p id="waitingText" class="instruction-line instruction-waiting">Waiting for teacher to start the next question.</p>
+      <p id="feedbackText" class="instruction-line"></p>
     </section>
 
     <section class="card">
-      <h2>📊 Live Leaderboard</h2>
+      <h2>🧠 Live Quiz Leaderboard</h2>
       <div class="leaderboard-container" id="leaderboard"></div>
     </section>
 
@@ -80,7 +83,7 @@
   <div class="modal-overlay" id="announcementModal">
     <div class="modal-content announcement-modal" id="announcementCard">
       <div class="modal-header">
-        <div class="announcement-emoji" id="announcementEmoji">🏆</div>
+        <div class="announcement-emoji" id="announcementEmoji">🧠</div>
         <h3 class="modal-title" id="announcementTitle">Winner Update</h3>
       </div>
       <div class="modal-body">
