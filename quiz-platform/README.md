@@ -1,169 +1,211 @@
 # Classroom Quiz Platform
 
-A real-time, offline-capable multiple-choice quiz platform for classroom use — supporting up to **9 teams** and **1 teacher**, built with Node.js, Express, and Socket.io.
+Real-time classroom MCQ quiz system for **1 teacher + up to 9 teams**, built with Node.js, Express, and Socket.io.
 
----
+This app is designed for classroom/projector use on a local network (no internet required after setup).
 
-## Overview
+## What’s New (Latest Updates)
 
-The platform runs a structured three-stage quiz competition where teams answer multiple-choice questions (A/B/C/D) in real time from their own devices. The teacher controls the flow of the quiz from a dedicated control panel. Scoring is speed-based, and teams are progressively eliminated across stages until two finalists compete in a head-to-head final.
+- Team and teacher views now show **response time in seconds** for answers.
+- Team side now shows competitor response times in the live leaderboard.
+- Team “Your Progress” table now includes per-question answer time.
+- Teacher panel includes a **projector question panel** (question + options, read-only).
+- In **Stage 3 only**, projector question stays visible after a question ends and disappears only after clicking **Next Question**.
 
----
+## Quick Start
 
-## Tech Stack
-
-| Layer     | Technology              |
-|-----------|-------------------------|
-| Server    | Node.js + Express       |
-| Realtime  | Socket.io (WebSockets)  |
-| Frontend  | Vanilla HTML/CSS/JS     |
-| Data      | `questions.json` (flat file) |
-
----
-
-## Getting Started
+### 1) Install dependencies
 
 ```bash
 npm install
-node server.js
 ```
 
-| Role    | URL                                   |
-|---------|---------------------------------------|
-| Teams   | `http://<laptop-ip>:3000`             |
-| Teacher | `http://<laptop-ip>:3000/teacher`     |
+### 2) Start server
 
-For local testing:
-- `http://localhost:3000`
-- `http://localhost:3000/teacher`
+```bash
+npm start
+```
 
-The server runs on port **3000** and binds to all network interfaces (`0.0.0.0`), making it accessible over a local hotspot without internet.
+### 3) Open URLs
 
----
+- Team screen: `http://localhost:3000`
+- Teacher panel: `http://localhost:3000/teacher`
 
-## Quiz Structure
+For other devices on the same hotspot/LAN:
 
-The quiz runs across **three stages**, each with different rules and scoring.
+- Team screen: `http://<host-ip>:3000`
+- Teacher panel: `http://<host-ip>:3000/teacher`
 
-### Stage 1 — Open Round (10 questions, up to 9 teams)
+The server listens on `0.0.0.0:3000`.
 
-- All registered teams participate.
-- Each team starts with **500 points**.
-- **20-second timer** per question.
-- Speed-based bonus points for correct answers (awarded to the first 5 correct teams):
+## Project Structure
 
-  | Rank | Points |
-  |------|--------|
-  | 1st  | 1000   |
-  | 2nd  | 900    |
-  | 3rd  | 800    |
-  | 4th  | 700    |
-  | 5th  | 600    |
-  | 6th+ | 500    |
+```text
+quiz-platform/
+├── package.json
+├── questions.json
+├── server.js
+└── public/
+    ├── index.html      # Team UI
+    ├── team.js
+    ├── teacher.html    # Teacher UI
+    ├── teacher.js
+    └── style.css
+```
 
-- **Retry mechanic**: If a team answers incorrectly on their first attempt, they may purchase a second attempt for **250 points**. If the retry answer is also wrong, an additional **350 points** are deducted.
-- At the end of Stage 1:
-  - The **top-scoring team** advances directly as **Finalist 1**.
-  - The **next 8 teams** advance to Stage 2 (Semifinal).
-  - All remaining teams are eliminated.
+## How the Quiz Works
 
-### Stage 2 — Semifinal (3 questions, up to 8 teams)
+The quiz has 3 stages with different rules.
 
-- Only teams that qualified from Stage 1 participate.
-- **1 attempt only** per question (no retry).
-- Speed-based scoring:
+### Stage 1 (Open Round)
 
-  | Rank | Points |
-  |------|--------|
-  | 1st  | 2500   |
-  | 2nd  | 1500   |
-  | 3rd  | 1000   |
+- All teams play.
+- Start score: **500** per team.
+- Timer: **20 seconds** per question.
+- Correct answers are speed-ranked:
+  - 1st: 1000
+  - 2nd: 900
+  - 3rd: 800
+  - 4th: 700
+  - 5th: 600
+  - 6th+ correct: 500
+- First wrong attempt can use one paid retry:
+  - Retry cost: **250** points
+  - If retry is wrong: extra **-350** penalty
 
-- At the end of Stage 2:
-  - The **top-scoring semifinalist** advances as **Finalist 2**.
-  - All other teams are eliminated.
+End of Stage 1:
 
-### Stage 3 — Final (3 questions, 2 teams)
+- Top team becomes **Finalist 1**.
+- Next teams continue as semifinalists.
+- Others are eliminated.
 
-- Only the two finalists compete.
-- Up to **3 attempts** per question.
-- Points per correct answer scale by attempt used:
+### Stage 2 (Semifinal)
 
-  | Attempt | Points |
-  |---------|--------|
-  | 1st     | 100    |
-  | 2nd     | 75     |
-  | 3rd     | 50     |
+- Only semifinalists play.
+- Timer: **30 seconds** per question.
+- One attempt only.
+- Speed points:
+  - 1st: 2500
+  - 2nd: 1500
+  - 3rd: 1000
 
-- The **first team to answer correctly** in each question earns an additional **100 bonus points**.
-- The finalist with the highest score at the end wins.
+End of Stage 2:
 
----
+- Top semifinalist becomes **Finalist 2**.
 
-## Roles
+### Stage 3 (Final)
 
-### Team View (`/`)
+- Only 2 finalists play.
+- No timer limit.
+- Up to 3 attempts:
+  - 1st attempt correct: 100
+  - 2nd attempt correct: 75
+  - 3rd attempt correct: 50
+- First correct team for that question gets **+100 bonus**.
 
-- Enter a team name to join (max 9 teams).
-- Team name now validates strictly (letters, numbers, spaces only).
-- Auto-rejoin remembers the last team name on reconnect/reload.
-- See the current question text and answer with buttons A–D.
-- Countdown timer shows time remaining.
-- Score, attempt count, and feedback messages update in real time.
-- Connection status badge shows live socket connectivity.
-- Live leaderboard visible at all times.
+Highest score at the end wins.
 
-### Teacher Panel (`/teacher`)
+### Tie-Breakers
 
-Controls the entire quiz flow:
+If needed, built-in tie-break questions are used for stages 1/2/3.
 
-| Button            | Action                                                    |
-|-------------------|-----------------------------------------------------------|
-| Start Question    | Activates current question and starts the 20s timer       |
-| Next Question     | Advances to the next question within the current stage    |
-| Next Round        | Triggers end-of-stage elimination logic and moves forward |
- 
-The teacher controls now use a projector-friendly flow:
-- `Start Question` can be used only once per question.
-- If a completed question is started again, a popup warns that the question is already completed.
-- `Next Question` is enabled only after the current question has been asked.
-- `Next Round` asks for confirmation before proceeding.
+## Team Screen Features (`/`)
 
-Keyboard shortcuts on teacher panel:
+- Join with team name (letters/numbers/spaces only, max 30 chars).
+- Auto-reconnect with saved team name.
+- Live question + answer buttons A/B/C/D.
+- Live timer, score, attempts, feedback.
+- Live leaderboard with rank movement.
+- Competitor and self response times shown during active questions.
+- “Your Progress” table includes:
+  - Stage
+  - Question number
+  - Answer
+  - Time (seconds)
+  - Correct/Wrong
+  - Points delta
+
+## Teacher Panel Features (`/teacher`)
+
+### Controls
+
+- **Start Question**: activates current question.
+- **Next Question**: finalizes active question if needed, then moves forward.
+- **Next Round**: moves to next stage (with confirmation).
+
+Keyboard shortcuts:
+
 - `S` = Start Question
 - `N` = Next Question
 - `R` = Next Round
 
-The teacher panel also shows:
-- A live table of all team answers, attempt counts, timestamps, and correctness.
-- The full leaderboard with each team's score and elimination status.
-- The finalists and stage winners when determined.
+### Projector Panel (Read-only)
 
----
+- Appears below the 3 control buttons when a question is active.
+- Displays current question and options for projector audience.
+- Not answerable from teacher panel.
+- Stage behavior:
+  - Stage 1/2: hides when question is inactive.
+  - Stage 3: stays visible after question end; hides on **Next Question**.
 
-## Questions
+### Monitoring Views
 
-Questions are loaded from `questions.json` at startup. The file is structured as three arrays keyed by stage:
+- Live leaderboard with stage highlights and rank changes.
+- Team Answers table for current question:
+  - Team name
+  - Answer
+  - Attempt count
+  - Timestamp
+  - Response time (seconds)
+  - Correct status
+
+## Questions Configuration
+
+Questions are loaded from `questions.json` at server start.
+
+Expected format:
 
 ```json
 {
-  "stage1": [ { "id": "S1Q1", "text": "...", "options": ["A. ...", ...], "correct": "A" }, ... ],
-  "stage2": [ ... ],
-  "stage3": [ ... ]
+  "stage1": [
+    {
+      "id": "S1Q1",
+      "text": "Question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": "A",
+      "explanation": "Optional explanation"
+    }
+  ],
+  "stage2": [],
+  "stage3": []
 }
 ```
 
-To customise the quiz, edit `questions.json` and restart the server. The format requires:
-- `id` — unique question identifier
-- `text` — question body
-- `options` — array of exactly 4 strings (prefixed A–D)
-- `correct` — the correct option letter (`"A"`, `"B"`, `"C"`, or `"D"`)
+Rules:
 
----
+- `correct` must be one of: `A`, `B`, `C`, `D`.
+- Each question should include exactly 4 options.
+- Restart server after changing `questions.json`.
 
-## Key Constraints
+## Important Notes
 
-- Maximum **9 teams** can register.
-- Teams can reconnect using the same team name if they lose connection.
-- The quiz state lives entirely in server memory; **restarting the server resets everything**.
-- The teacher can trigger a full reset at any time via `teacher:resetAll` (Socket.io event).
+- Max teams: **9**.
+- Quiz state is in-memory; restarting server resets running quiz.
+- New teams cannot join after quiz has started.
+- Reconnecting with the same team name is supported.
+
+## Troubleshooting
+
+### Port already in use
+
+- Stop old process using port 3000, then run `npm start` again.
+
+### Teams cannot connect from phones
+
+- Ensure all devices are on same Wi-Fi/hotspot.
+- Use host machine IP (not localhost) on phones.
+- Check firewall allows port `3000`.
+
+### “Question already completed” in teacher panel
+
+- Click **Next Question** to move forward.

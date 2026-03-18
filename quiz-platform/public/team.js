@@ -180,12 +180,15 @@ function renderLeaderboard(leaderboardData, stageWinners = latestStageWinners, s
       const safeName = escapeHtml(team.name);
       const safeTierText = escapeHtml(tierText);
       const safeRankText = escapeHtml(rankText);
+      const responseTime = typeof team.responseSeconds === 'number' ? `${team.responseSeconds.toFixed(1)}s` : '';
+      const safeResponseTime = escapeHtml(responseTime);
 
       return `
         <div class="leaderboard-bar ${isSelf ? 'leaderboard-self' : ''} ${rankClass ? 'rank-shift' : ''} ${tierClass}">
           <div class="bar-label ${isSelf ? 'bar-label-self' : ''}">
             <span class="bar-label-team">
               <span class="bar-label-main">${isSelf ? '🎯' : icon} ${safeName}</span>
+              ${responseTime ? `<span class="response-seconds">⏱ ${safeResponseTime}</span>` : ''}
               ${tierText ? `<span class="tier-pill">${safeTierText}</span>` : ''}
             </span>
             ${rankText ? `<span class="rank-chip ${rankClass}">${safeRankText}</span>` : ''}
@@ -205,7 +208,7 @@ function renderLeaderboard(leaderboardData, stageWinners = latestStageWinners, s
 
 function renderScoreSheet(rows) {
   if (!rows || !rows.length) {
-    scoreSheetBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">No completed questions yet.</td></tr>';
+    scoreSheetBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">No completed questions yet.</td></tr>';
     return;
   }
 
@@ -215,13 +218,16 @@ function renderScoreSheet(rows) {
       const correctStatus = row.answer ? (row.correct ? '✓ Correct' : '✗ Wrong') : '-';
       const pointsText = row.pointsDelta >= 0 ? `+${row.pointsDelta}` : `${row.pointsDelta}`;
       const pointsClass = row.pointsDelta >= 0 ? 'success-text' : 'error';
+      const responseTime = typeof row.responseSeconds === 'number' ? `${row.responseSeconds.toFixed(1)}s` : '-';
       const safeStage = escapeHtml(String(row.stage || '').toUpperCase());
       const safeAnswer = escapeHtml(row.answer || '-');
+      const safeResponseTime = escapeHtml(responseTime);
       const safeCorrectStatus = escapeHtml(correctStatus);
       return `<tr>
         <td>${safeStage}</td>
         <td>Q${row.questionNumber}</td>
         <td>${safeAnswer}</td>
+        <td>${safeResponseTime}</td>
         <td>${safeCorrectStatus}</td>
         <td class="${pointsClass}">${pointsText}</td>
       </tr>`;

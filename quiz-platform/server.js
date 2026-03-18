@@ -186,6 +186,12 @@ function getAnswerRow(teamName, questionKey = getQuestionKey()) {
   return getQuestionBucket(questionKey)[teamName] || null;
 }
 
+function getResponseSeconds(answerTs, questionStartTs = quizState.questionStartTs) {
+  if (typeof answerTs !== 'number' || typeof questionStartTs !== 'number') return null;
+  const elapsedMs = Math.max(0, answerTs - questionStartTs);
+  return Math.round((elapsedMs / 1000) * 10) / 10;
+}
+
 function hasSubmittedCorrectAnswer(teamName, questionKey = getQuestionKey(), question = getCurrentQuestion()) {
   const row = getAnswerRow(teamName, questionKey);
   return Boolean(row && question && row.answer === question.correct);
@@ -193,6 +199,7 @@ function hasSubmittedCorrectAnswer(teamName, questionKey = getQuestionKey(), que
 
 function buildLeaderboard() {
   const questionKey = getQuestionKey();
+  const currentQuestionBucket = getQuestionBucket(questionKey);
   const stage1FinalistName = quizState.stage === 'stage2' ? quizState.stageWinners.stage1 : null;
   const teams = Object.values(quizState.teams).filter((team) => {
     if (quizState.stage !== 'stage3') return true;
@@ -211,7 +218,8 @@ function buildLeaderboard() {
         eliminated: team.eliminated,
         stageQualified: team.stageQualified,
         badge: badge,
-        attemptsUsed: team.attemptsByQuestion[questionKey] || 0
+        attemptsUsed: team.attemptsByQuestion[questionKey] || 0,
+        responseSeconds: getResponseSeconds(currentQuestionBucket[team.teamName]?.ts)
       };
     })
     .sort((a, b) => {
@@ -232,6 +240,7 @@ function buildTeamScoreSheet(teamName) {
       questionNumber: entry.questionIndex + 1,
       questionId: entry.questionId,
       answer: entry.answer,
+      responseSeconds: entry.responseSeconds,
       attempts: entry.attempts,
       correct: entry.correct,
       pointsAdded: entry.pointsAdded,
@@ -284,6 +293,8 @@ function recordQuestionHistory(stage, questionIndex, questionId, correctAnswer, 
       correctAnswer,
       teamName: team.teamName,
       answer: row ? row.answer : null,
+      answerTs: row ? row.ts : null,
+      responseSeconds: row ? row.responseSeconds : null,
       attempts: row ? row.attempts : 0,
       correct: Boolean(row && row.answer === correctAnswer),
       pointsAdded: delta.added,
@@ -426,6 +437,7 @@ function emitState() {
       teamName: name,
       answer: data.answer,
       ts: data.ts,
+      responseSeconds: data.responseSeconds,
       attempts: data.attempts,
       correct: data.correct
     }));
@@ -1085,10 +1097,12 @@ io.on('connection', (socket) => {
 
     if (quizState.stage === 'stage1') {
       if (attemptsUsed === 0) {
+        const responseSeconds = getResponseSeconds(now);
         team.attemptsByQuestion[questionKey] = 1;
         quizState.answersByQuestion[questionKey][teamName] = {
           answer: normalizedAnswer,
           ts: now,
+          responseSeconds,
           attempts: 1,
           correct: null
         };
@@ -1100,12 +1114,14 @@ io.on('connection', (socket) => {
           });
         }
       } else if (canUseStage1Retry(team, questionKey, question)) {
+        const responseSeconds = getResponseSeconds(now);
         applyScoreDelta(team, questionKey, -STAGE_CONFIG.stage1.retryCost);
         team.retryUsedByQuestion[questionKey] = true;
         team.attemptsByQuestion[questionKey] = 2;
         quizState.answersByQuestion[questionKey][teamName] = {
           answer: normalizedAnswer,
           ts: now,
+          responseSeconds,
           attempts: 2,
           correct: null
         };
@@ -1115,10 +1131,12 @@ io.on('connection', (socket) => {
       }
     } else {
       const nextAttempt = attemptsUsed + 1;
+      const responseSeconds = getResponseSeconds(now);
       team.attemptsByQuestion[questionKey] = nextAttempt;
       quizState.answersByQuestion[questionKey][teamName] = {
         answer: normalizedAnswer,
         ts: now,
+        responseSeconds,
         attempts: nextAttempt,
         correct: null
       };

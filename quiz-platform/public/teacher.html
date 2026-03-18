@@ -23,6 +23,10 @@
         <button id="nextQuestionBtn" class="teacher-control-btn btn-next">⏭ Next Question</button>
         <button id="nextStageBtn" class="teacher-control-btn btn-round">🎭 Next Round</button>
       </div>
+      <div id="projectorQuestionPanel" class="teacher-question-panel hidden" aria-live="polite">
+        <h3 id="projectorQuestionText" class="teacher-question-text">Question will appear here</h3>
+        <div id="projectorQuestionOptions" class="teacher-question-options"></div>
+      </div>
       <p id="teacherTimer" class="timer">--</p>
       <p id="teacherError" class="error"></p>
     </section>
@@ -41,7 +45,7 @@
       <h2>👥 Team Answers (Current Question)</h2>
       <table>
         <thead>
-          <tr><th>Team</th><th>Answer</th><th>Attempt</th><th>Timestamp</th><th>Correct</th></tr>
+          <tr><th>Team</th><th>Answer</th><th>Attempt</th><th>Timestamp</th><th>Response Time</th><th>Correct</th></tr>
         </thead>
         <tbody id="answersBody"></tbody>
       </table>

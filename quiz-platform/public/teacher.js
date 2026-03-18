@@ -11,6 +11,9 @@ const stage2WinnerTile = document.getElementById('stage2WinnerTile');
 const teacherError = document.getElementById('teacherError');
 const teacherTimer = document.getElementById('teacherTimer');
 const teacherConnectionStatus = document.getElementById('teacherConnectionStatus');
+const projectorQuestionPanel = document.getElementById('projectorQuestionPanel');
+const projectorQuestionText = document.getElementById('projectorQuestionText');
+const projectorQuestionOptions = document.getElementById('projectorQuestionOptions');
 
 const startQuestionBtn = document.getElementById('startQuestionBtn');
 const nextQuestionBtn = document.getElementById('nextQuestionBtn');
@@ -33,6 +36,7 @@ let timerInterval;
 let answerModalTimeout;
 let shownWinners = { stage1: null, stage2: null, champion: null };
 let previousRankByStage = { stage1: {}, stage2: {}, stage3: {} };
+let cachedProjectorQuestion = null;
 
 function escapeHtml(value) {
   return String(value)
@@ -51,6 +55,48 @@ function setConnectionStatus(isConnected) {
 
 function showPopupMessage(message) {
   alert(message);
+}
+
+function clearProjectorQuestion() {
+  cachedProjectorQuestion = null;
+  projectorQuestionPanel.classList.add('hidden');
+  projectorQuestionText.textContent = 'Question will appear here';
+  projectorQuestionOptions.innerHTML = '';
+}
+
+function renderProjectorQuestion(questionActive, currentQuestion, stage) {
+  if (questionActive && currentQuestion) {
+    cachedProjectorQuestion = {
+      stage,
+      question: currentQuestion
+    };
+  }
+
+  const displayQuestion = questionActive && currentQuestion
+    ? currentQuestion
+    : (stage === 'stage3' && cachedProjectorQuestion?.stage === 'stage3'
+      ? cachedProjectorQuestion.question
+      : null);
+
+  const shouldShow = Boolean(displayQuestion);
+
+  if (!shouldShow) {
+    clearProjectorQuestion();
+    return;
+  }
+
+  const safeQuestionText = escapeHtml(displayQuestion.text || 'Question');
+  const optionsMarkup = ['A', 'B', 'C', 'D']
+    .map((label, index) => {
+      const value = Array.isArray(displayQuestion.options) ? displayQuestion.options[index] : '';
+      const safeValue = escapeHtml(value || '-');
+      return `<div class="teacher-option-item"><span class="teacher-option-letter">${label}</span><span class="teacher-option-value">${safeValue}</span></div>`;
+    })
+    .join('');
+
+  projectorQuestionText.textContent = safeQuestionText;
+  projectorQuestionOptions.innerHTML = optionsMarkup;
+  projectorQuestionPanel.classList.remove('hidden');
 }
 
 function updateControlButtons({ questionActive, questionCompleted, currentQuestion, quizCompleted }) {
@@ -99,6 +145,7 @@ function resetTeacherView() {
   stage1WinnerTile.textContent = '';
   stage2WinnerTile.textContent = '';
   runCountdown(null);
+  clearProjectorQuestion();
   closeModal();
   closeAnnouncement();
   shownWinners = { stage1: null, stage2: null, champion: null };
@@ -281,6 +328,7 @@ startQuestionBtn.addEventListener('click', () => {
 });
 
 nextQuestionBtn.addEventListener('click', () => {
+  clearProjectorQuestion();
   closeModal();
   closeAnnouncement();
   socket.emit('teacher:nextQuestion');
@@ -342,17 +390,20 @@ socket.on('teacher:state', ({
 }) => {
   stageEl.textContent = stage.toUpperCase();
   progressEl.textContent = `Q${questionIndex + 1} / ${totalQuestions}`;
+  renderProjectorQuestion(questionActive, currentQuestion, stage);
 
   renderLeaderboard(leaderboard, stageWinners, stage);
 
   answersBody.innerHTML = answerRows
     .map((row) => {
       const t = row.ts ? new Date(row.ts).toLocaleTimeString() : '-';
+      const responseTime = typeof row.responseSeconds === 'number' ? `${row.responseSeconds.toFixed(1)}s` : '-';
       const correct = row.correct === null ? '-' : row.correct ? '✓ Yes' : '✗ No';
       const safeTeamName = escapeHtml(row.teamName || '-');
       const safeAnswer = escapeHtml(row.answer || '-');
+      const safeResponseTime = escapeHtml(responseTime);
       const safeCorrect = escapeHtml(correct);
-      return `<tr><td>${safeTeamName}</td><td>${safeAnswer}</td><td>${row.attempts || 0}</td><td>${t}</td><td>${safeCorrect}</td></tr>`;
+      return `<tr><td>${safeTeamName}</td><td>${safeAnswer}</td><td>${row.attempts || 0}</td><td>${t}</td><td>${safeResponseTime}</td><td>${safeCorrect}</td></tr>`;
     })
     .join('');
 
