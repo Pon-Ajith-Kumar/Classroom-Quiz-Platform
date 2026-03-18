@@ -89,6 +89,13 @@ function renderQuestion(question) {
   });
 }
 
+function clearAnswerSelection() {
+  answerButtons.forEach((btn) => {
+    btn.classList.remove('selected');
+    btn.blur();
+  });
+}
+
 function resetTeamView() {
   registered = false;
   joinSection.classList.remove('hidden');
@@ -213,7 +220,8 @@ function renderScoreSheet(rows) {
   }
 
   scoreSheetSection.style.display = 'block';
-  scoreSheetBody.innerHTML = rows
+  scoreSheetBody.innerHTML = [...rows]
+    .reverse()
     .map((row) => {
       const correctStatus = row.answer ? (row.correct ? '✓ Correct' : '✗ Wrong') : '-';
       const pointsText = row.pointsDelta >= 0 ? `+${row.pointsDelta}` : `${row.pointsDelta}`;
@@ -333,6 +341,9 @@ teamNameInput.addEventListener('keydown', (event) => {
 
 answerButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
+    clearAnswerSelection();
+    btn.classList.add('selected');
+    btn.blur();
     socket.emit('team:submitAnswer', { answer: btn.dataset.answer });
   });
 });
@@ -411,6 +422,7 @@ socket.on('team:retryOption', ({ allowRetry, retryCost }) => {
 
 socket.on('question:started', ({ question, stage, questionIndex, timerEndsAt }) => {
   renderQuestion(question);
+  clearAnswerSelection();
   feedbackText.textContent = '';
   setInstructionTone(feedbackText, 'waiting');
   stageBadge.textContent = stage.toUpperCase();
@@ -423,6 +435,7 @@ socket.on('question:started', ({ question, stage, questionIndex, timerEndsAt }) 
 
 socket.on('question:ended', ({ correctAnswer, question }) => {
   renderQuestion(null);
+  clearAnswerSelection();
   setAnswerButtonsEnabled(false);
   
   if (question) {

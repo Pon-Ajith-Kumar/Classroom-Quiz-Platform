@@ -42,22 +42,34 @@ const STAGE_CONFIG = {
   }
 };
 
+function getTieBreakerQuestion(stage) {
+  if (!questions || typeof questions !== 'object') return null;
+
+  const tieBreakers = questions.tieBreakers;
+  if (!tieBreakers || typeof tieBreakers !== 'object') return null;
+
+  const question = tieBreakers[stage];
+  if (!question || typeof question !== 'object') return null;
+
+  return question;
+}
+
 const TIE_BREAK_QUESTIONS = {
-  stage1: {
+  stage1: getTieBreakerQuestion('stage1') || {
     id: 'TB-S1',
     text: 'Tie-Breaker: Which number is prime?',
     options: ['111', '121', '131', '141'],
     correct: 'C',
     explanation: '131 is prime. The others are composite numbers.'
   },
-  stage2: {
+  stage2: getTieBreakerQuestion('stage2') || {
     id: 'TB-S2',
     text: 'Tie-Breaker: Which planet has the most moons?',
     options: ['Earth', 'Mars', 'Jupiter', 'Venus'],
     correct: 'C',
     explanation: 'Jupiter has the highest known number of moons.'
   },
-  stage3: {
+  stage3: getTieBreakerQuestion('stage3') || {
     id: 'TB-S3',
     text: 'Final Tie-Breaker: Which language runs in the browser natively?',
     options: ['Python', 'Java', 'JavaScript', 'C++'],
@@ -933,7 +945,28 @@ function isTeacherSocket(socket) {
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/teacher', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'teacher.html'));
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.type('html').send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Access</title>
+</head>
+<body>
+  <script>
+    (function () {
+      const password = window.prompt('Enter teacher password:');
+      if (password === '1025') {
+        window.location.replace('/teacher.html');
+        return;
+      }
+      window.alert('Incorrect password.');
+      window.location.replace('/');
+    })();
+  </script>
+</body>
+</html>`);
 });
 
 io.on('connection', (socket) => {
