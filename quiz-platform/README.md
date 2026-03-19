@@ -1,211 +1,100 @@
 # Classroom Quiz Platform
 
-Real-time classroom MCQ quiz system for **1 teacher + up to 9 teams**, built with Node.js, Express, and Socket.io.
+**Public-facing open-source quiz platform** for classroom and small-team use.
 
-This app is designed for classroom/projector use on a local network (no internet required after setup).
+- 1 teacher + up to 9 team clients
+- Local network operation (works offline after starting)
+- Built with Node.js, Express, Socket.io, and static web UI
 
-## What’s New (Latest Updates)
+## 🚀 Quick Start (Public Use)
 
-- Team and teacher views now show **response time in seconds** for answers.
-- Team side now shows competitor response times in the live leaderboard.
-- Team “Your Progress” table now includes per-question answer time.
-- Teacher panel includes a **projector question panel** (question + options, read-only).
-- In **Stage 3 only**, projector question stays visible after a question ends and disappears only after clicking **Next Question**.
+1) Clone repository
 
-## Quick Start
+```bash
+git clone https://github.com/Pon-Ajith-Kumar/exam-repo.git
+cd exam-repo/quiz-platform
+```
 
-### 1) Install dependencies
+2) Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2) Start server
+3) Start server
 
 ```bash
 npm start
 ```
 
-### 3) Open URLs
+4) Open browsers
 
-- Team screen: `http://localhost:3000`
-- Teacher panel: `http://localhost:3000/teacher`
-
-For other devices on the same hotspot/LAN:
-
-- Team screen: `http://<host-ip>:3000`
+- Team screen (any device on LAN): `http://<host-ip>:3000`
 - Teacher panel: `http://<host-ip>:3000/teacher`
 
-The server listens on `0.0.0.0:3000`.
+> Tip: `localhost` works on host machine only; use IP for mobile devices.
 
-## Project Structure
+## 📁 Project Structure
 
-```text
-quiz-platform/
-├── package.json
-├── questions.json
-├── server.js
-└── public/
-    ├── index.html      # Team UI
-    ├── team.js
-    ├── teacher.html    # Teacher UI
-    ├── teacher.js
-    └── style.css
-```
+- `package.json` - dependencies and start script
+- `server.js` - backend state, Socket.io logic, game event flow
+- `questions.json` - quiz question bank (stage1/stage2/stage3)
+- `public/index.html` + `public/team.js` - team UI
+- `public/teacher.html` + `public/teacher.js` - teacher UI
+- `public/style.css` - shared styling
 
-## How the Quiz Works
+## 🎮 Gameplay Overview
 
-The quiz has 3 stages with different rules.
+This quiz platform has 3 auto-managed stages:
 
-### Stage 1 (Open Round)
+- Stage 1: open round, timed answers, speed-based scoring
+- Stage 2: semifinal, limited teams, one attempt per question
+- Stage 3: final, best-of with multiple attempts and bonuses
 
-- All teams play.
-- Start score: **500** per team.
-- Timer: **20 seconds** per question.
-- Correct answers are speed-ranked:
-  - 1st: 1000
-  - 2nd: 900
-  - 3rd: 800
-  - 4th: 700
-  - 5th: 600
-  - 6th+ correct: 500
-- First wrong attempt can use one paid retry:
-  - Retry cost: **250** points
-  - If retry is wrong: extra **-350** penalty
+### Available features for all users
 
-End of Stage 1:
+- Team join with name (letters/numbers/spaces, max 30)
+- Real-time leaderboard updates
+- Answer timers, response times, attempt history
+- Teacher controls: Start Question, Next Question, Next Round
+- Projector view of current question from teacher panel
 
-- Top team becomes **Finalist 1**.
-- Next teams continue as semifinalists.
-- Others are eliminated.
+## 🛠️ Configure Questions
 
-### Stage 2 (Semifinal)
-
-- Only semifinalists play.
-- Timer: **30 seconds** per question.
-- One attempt only.
-- Speed points:
-  - 1st: 2500
-  - 2nd: 1500
-  - 3rd: 1000
-
-End of Stage 2:
-
-- Top semifinalist becomes **Finalist 2**.
-
-### Stage 3 (Final)
-
-- Only 2 finalists play.
-- No timer limit.
-- Up to 3 attempts:
-  - 1st attempt correct: 100
-  - 2nd attempt correct: 75
-  - 3rd attempt correct: 50
-- First correct team for that question gets **+100 bonus**.
-
-Highest score at the end wins.
-
-### Tie-Breakers
-
-If needed, built-in tie-break questions are used for stages 1/2/3.
-
-## Team Screen Features (`/`)
-
-- Join with team name (letters/numbers/spaces only, max 30 chars).
-- Auto-reconnect with saved team name.
-- Live question + answer buttons A/B/C/D.
-- Live timer, score, attempts, feedback.
-- Live leaderboard with rank movement.
-- Competitor and self response times shown during active questions.
-- “Your Progress” table includes:
-  - Stage
-  - Question number
-  - Answer
-  - Time (seconds)
-  - Correct/Wrong
-  - Points delta
-
-## Teacher Panel Features (`/teacher`)
-
-### Controls
-
-- **Start Question**: activates current question.
-- **Next Question**: finalizes active question if needed, then moves forward.
-- **Next Round**: moves to next stage (with confirmation).
-
-Keyboard shortcuts:
-
-- `S` = Start Question
-- `N` = Next Question
-- `R` = Next Round
-
-### Projector Panel (Read-only)
-
-- Appears below the 3 control buttons when a question is active.
-- Displays current question and options for projector audience.
-- Not answerable from teacher panel.
-- Stage behavior:
-  - Stage 1/2: hides when question is inactive.
-  - Stage 3: stays visible after question end; hides on **Next Question**.
-
-### Monitoring Views
-
-- Live leaderboard with stage highlights and rank changes.
-- Team Answers table for current question:
-  - Team name
-  - Answer
-  - Attempt count
-  - Timestamp
-  - Response time (seconds)
-  - Correct status
-
-## Questions Configuration
-
-Questions are loaded from `questions.json` at server start.
-
-Expected format:
+`questions.json` format:
 
 ```json
 {
-  "stage1": [
-    {
-      "id": "S1Q1",
-      "text": "Question text",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct": "A",
-      "explanation": "Optional explanation"
-    }
-  ],
+  "stage1": [{ "id": "S1Q1", "text": "...", "options": ["A","B","C","D"], "correct": "A" }],
   "stage2": [],
   "stage3": []
 }
 ```
 
-Rules:
+- `correct` must be `A`, `B`, `C`, or `D`
+- Exactly four options required per question
+- Restart server after editing questions
 
-- `correct` must be one of: `A`, `B`, `C`, `D`.
-- Each question should include exactly 4 options.
-- Restart server after changing `questions.json`.
+## 🔧 Development Notes
 
-## Important Notes
+- Max 9 teams (UI + server limits)
+- State is in-memory; server restart resets game
+- New teams cannot join once the quiz starts
+- Reconnect via same name if disconnected
 
-- Max teams: **9**.
-- Quiz state is in-memory; restarting server resets running quiz.
-- New teams cannot join after quiz has started.
-- Reconnecting with the same team name is supported.
+## 🛠️ Troubleshooting
 
-## Troubleshooting
+- Port conflicts: stop other process on `3000`, then restart
+- Mobile join failures: ensure same Wi-Fi/LAN and correct host IP
+- Teacher warning “Question already completed”: click Next Question
 
-### Port already in use
+## 🤝 Contribution
 
-- Stop old process using port 3000, then run `npm start` again.
+1) Fork repository
+2) Create feature branch `feature/<name>`
+3) Open PR with details and screenshots
 
-### Teams cannot connect from phones
+## 📜 License
 
-- Ensure all devices are on same Wi-Fi/hotspot.
-- Use host machine IP (not localhost) on phones.
-- Check firewall allows port `3000`.
+MIT License (add file in repo root if not present)
 
-### “Question already completed” in teacher panel
-
-- Click **Next Question** to move forward.
