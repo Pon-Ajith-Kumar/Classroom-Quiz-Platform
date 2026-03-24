@@ -1,47 +1,143 @@
 {
   "stage1": [
-    { "id": "S1Q1", "text": "Capital of France?", "options": ["Paris", "Rome", "Berlin", "Madrid"], "correct": "A", "explanation": "Paris is the capital and most populous city of France, located in the north-central part of the country." },
-    { "id": "S1Q2", "text": "5 x 6 = ?", "options": ["28", "30", "35", "26"], "correct": "B", "explanation": "Multiplication: 5 × 6 = 30. This is a basic arithmetic operation." },
-    { "id": "S1Q3", "text": "Water chemical formula?", "options": ["O2", "CO2", "H2O", "H2"], "correct": "C", "explanation": "Water (H2O) consists of 2 hydrogen atoms and 1 oxygen atom bonded together." },
-    { "id": "S1Q4", "text": "Largest planet?", "options": ["Earth", "Jupiter", "Mars", "Venus"], "correct": "B", "explanation": "Jupiter is the largest planet in our solar system, with a diameter of about 88,000 miles." },
-    { "id": "S1Q5", "text": "HTML stands for?", "options": ["HyperText Markup Language", "HighText Machine Language", "Hyperlinks Text Mark Language", "Home Tool Markup Language"], "correct": "A", "explanation": "HTML (HyperText Markup Language) is the standard markup language used to create web pages." },
-    { "id": "S1Q6", "text": "Square root of 81?", "options": ["8", "9", "7", "6"], "correct": "B", "explanation": "√81 = 9, because 9 × 9 = 81. The square root finds the number that when multiplied by itself gives 81." },
-    { "id": "S1Q7", "text": "Which is a prime number?", "options": ["21", "27", "29", "33"], "correct": "C", "explanation": "29 is a prime number because it can only be divided by 1 and itself. 21, 27, and 33 are composite numbers." },
-    { "id": "S1Q8", "text": "Fastest land animal?", "options": ["Tiger", "Cheetah", "Lion", "Horse"], "correct": "B", "explanation": "The cheetah is the fastest land animal, capable of reaching speeds up to 70 mph (112 km/h)." },
-    { "id": "S1Q9", "text": "Who wrote Hamlet?", "options": ["Shakespeare", "Dickens", "Tolstoy", "Twain"], "correct": "A", "explanation": "William Shakespeare wrote Hamlet, one of his most famous tragedies, believed to be written between 1600 and 1601." },
-    { "id": "S1Q10", "text": "Binary of decimal 2?", "options": ["01", "11", "10", "100"], "correct": "C", "explanation": "The decimal number 2 is represented as 10 in binary (1×2¹ + 0×2⁰ = 2)." }
+    {
+      "id": "S1Q1",
+      "text": "What does iOS stand for?",
+      "options": ["Internet Operating System", "iPhone Operating System", "Intelligent Operating System", "Integrated Operating System"],
+      "correct": "B",
+      "explanation": "iOS stands for iPhone Operating System. It was originally designed specifically for the iPhone and later extended to other Apple devices like iPad and iPod Touch."
+    },
+    {
+      "id": "S1Q2",
+      "text": "Which company develops iOS?",
+      "options": ["Google", "Microsoft", "Apple", "Samsung"],
+      "correct": "C",
+      "explanation": "Apple Inc. develops iOS as part of its ecosystem, ensuring tight integration between hardware, software, and services for better performance and security."
+    },
+    {
+      "id": "S1Q3",
+      "text": "Which language is mainly used for modern iOS development?",
+      "options": ["Java", "Kotlin", "Swift", "Python"],
+      "correct": "C",
+      "explanation": "Swift is Apple's modern programming language introduced in 2014. It is fast, safe, and easy to use, replacing Objective-C for most iOS development tasks."
+    },
+    {
+      "id": "S1Q4",
+      "text": "Which IDE is used to develop iOS apps?",
+      "options": ["Android Studio", "Visual Studio", "Xcode", "Eclipse"],
+      "correct": "C",
+      "explanation": "Xcode is Apple's official integrated development environment (IDE). It includes tools like Interface Builder, Simulator, and debugging features required for building iOS apps."
+    },
+    {
+      "id": "S1Q5",
+      "text": "Which feature isolates apps for better security in iOS?",
+      "options": ["Widgets", "Multitasking", "App Sandboxing", "AirDrop"],
+      "correct": "C",
+      "explanation": "App Sandboxing ensures that each app runs in its own secure environment, preventing it from accessing other apps’ data or system files without permission."
+    },
+    {
+      "id": "S1Q6",
+      "text": "Which Apple service is used for cloud storage?",
+      "options": ["iTunes", "iCloud", "Safari", "FaceTime"],
+      "correct": "B",
+      "explanation": "iCloud is Apple's cloud service that stores photos, files, backups, and app data, allowing users to access them across multiple Apple devices seamlessly."
+    },
+    {
+      "id": "S1Q7",
+      "text": "Which framework is used to build iOS user interfaces?",
+      "options": ["Core ML", "UIKit", "Core Data", "AVFoundation"],
+      "correct": "B",
+      "explanation": "UIKit is a primary framework used to design and manage user interfaces in iOS apps, including buttons, views, labels, and navigation components."
+    },
+    {
+      "id": "S1Q8",
+      "text": "Which feature allows file sharing between Apple devices?",
+      "options": ["NFC", "AirDrop", "Bluetooth", "USB"],
+      "correct": "B",
+      "explanation": "AirDrop uses Wi-Fi and Bluetooth to quickly and securely transfer files between nearby Apple devices without needing internet."
+    },
+    {
+      "id": "S1Q9",
+      "text": "What is the purpose of Auto Layout in iOS?",
+      "options": ["Memory management", "UI responsiveness", "Data storage", "Networking"],
+      "correct": "B",
+      "explanation": "Auto Layout helps create flexible and adaptive user interfaces that automatically adjust to different screen sizes and orientations."
+    },
+    {
+      "id": "S1Q10",
+      "text": "Which tool allows testing iOS apps without a real device?",
+      "options": ["Emulator", "iOS Simulator", "Sandbox", "Virtual Machine"],
+      "correct": "B",
+      "explanation": "The iOS Simulator is part of Xcode and allows developers to run and test apps on virtual iPhone or iPad devices without needing physical hardware."
+    }
   ],
   "stage2": [
-    { "id": "S2Q1", "text": "Sun rises in the?", "options": ["North", "South", "East", "West"], "correct": "C", "explanation": "The sun rises in the East due to the Earth's rotation from West to East." },
-    { "id": "S2Q2", "text": "Largest ocean?", "options": ["Atlantic", "Pacific", "Indian", "Arctic"], "correct": "B", "explanation": "The Pacific Ocean is the largest ocean on Earth, covering approximately 46% of the world's ocean surface." },
-    { "id": "S2Q3", "text": "7 + 8 = ?", "options": ["14", "15", "16", "17"], "correct": "B", "explanation": "7 + 8 = 15. This is a simple addition problem." }
+    {
+      "id": "S2Q1",
+      "text": "Add the date, month and year when Macworld conference was held?",
+      "options": ["2020", "2017", "1025", "2026"],
+      "correct": "B",
+      "explanation": "Macworld Conference is a major Apple event held on 9th January 2007. So 9+1+2007 = 2017"
+    },
+    {
+      "id": "S2Q2",
+      "text": "Which iOS layer handles data storage and networking?",
+      "options": ["Core OS", "Core Services", "Media", "Cocoa Touch"],
+      "correct": "B",
+      "explanation": "Core Services provides essential functionalities such as data storage (Core Data), networking (CF Network), and location services, acting as a bridge between apps and system."
+    },
+    {
+      "id": "S2Q3",
+      "text": "Which iOS layer handles graphics, audio, and video?",
+      "options": ["Core OS", "Core Services", "Media", "Cocoa Touch"],
+      "correct": "C",
+      "explanation": "The Media layer manages audio playback, video processing, animations, and graphics rendering, providing a rich multimedia experience in apps."
+    }
   ],
   "stage3": [
-    { "id": "S3Q1", "text": "Planet known as Red Planet?", "options": ["Mars", "Venus", "Saturn", "Mercury"], "correct": "A", "explanation": "Mars is called the Red Planet because of the iron oxide (rust) on its surface, which gives it a reddish appearance." },
-    { "id": "S3Q2", "text": "2^5 = ?", "options": ["10", "16", "25", "32"], "correct": "D", "explanation": "2^5 = 2 × 2 × 2 × 2 × 2 = 32. Exponentiation means multiplying the base by itself 5 times." },
-    { "id": "S3Q3", "text": "CSS used for?", "options": ["Logic", "Styling", "Database", "Hosting"], "correct": "B", "explanation": "CSS (Cascading Style Sheets) is used for styling web pages, controlling layout, colors, fonts, and visual design." }
+    {
+      "id": "S3Q1",
+      "text": "Which component is responsible for managing app navigation and screen flow in iOS?",
+      "options": ["Core Data", "UIKit", "Core ML", "AVFoundation"],
+      "correct": "B",
+      "explanation": "UIKit provides navigation controllers, view controllers, and UI components that manage screen transitions and app flow."
+    },
+    {
+      "id": "S3Q2",
+      "text": "What is the main advantage of Apple's WALLED GARDEN approach?",
+      "options": ["More customization", "Better security and control", "Free apps", "Faster internet"],
+      "correct": "B",
+      "explanation": "Apple controls both hardware and software, ensuring strict security, privacy, and optimized performance, though it limits user customization."
+    },
+    {
+      "id": "S3Q3",
+      "text": "Which feature allows iOS devices to unlock securely using facial recognition?",
+      "options": ["Touch ID", "Face ID", "Siri", "Spotlight"],
+      "correct": "B",
+      "explanation": "Face ID uses advanced sensors and machine learning to recognize the user’s face and securely unlock the device."
+    }
   ],
   "tieBreakers": {
     "stage1": {
       "id": "TB-S1",
-      "text": "Tie-Breaker: Which number is prime?",
-      "options": ["111", "121", "131", "141"],
-      "correct": "C",
-      "explanation": "131 is prime. The others are composite numbers."
+      "text": "Which framework is used for storing data persistently in iOS?",
+      "options": ["UIKit", "Core Data", "Core ML", "MapKit"],
+      "correct": "B",
+      "explanation": "Core Data is used to manage and store structured data in iOS apps, allowing efficient data handling and persistence."
     },
     "stage2": {
       "id": "TB-S2",
-      "text": "Tie-Breaker: Which planet has the most moons?",
-      "options": ["Earth", "Mars", "Jupiter", "Venus"],
-      "correct": "C",
-      "explanation": "Jupiter has the highest known number of moons."
+      "text": "Which framework is used for animations in iOS?",
+      "options": ["Core Animation", "Core Data", "Core Location", "UIKit"],
+      "correct": "A",
+      "explanation": "Core Animation is used to create smooth animations and visual transitions in iOS applications."
     },
     "stage3": {
       "id": "TB-S3",
-      "text": "Final Tie-Breaker: Which language runs in the browser natively?",
-      "options": ["Python", "Java", "JavaScript", "C++"],
-      "correct": "C",
-      "explanation": "JavaScript is the native language executed directly by browsers."
+      "text": "Which iOS feature securely stores sensitive data like passwords?",
+      "options": ["File System", "Keychain", "Core Data", "Cache"],
+      "correct": "B",
+      "explanation": "Keychain is a secure storage system in iOS used to store sensitive information such as passwords, encryption keys, and certificates."
     }
   }
 }

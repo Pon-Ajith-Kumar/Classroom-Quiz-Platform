@@ -1,47 +1,143 @@
 {
   "stage1": [
-    { "id": "S1Q1", "text": "Capital of France?", "options": ["Paris", "Rome", "Berlin", "Madrid"], "correct": "A", "explanation": "Paris is the capital and most populous city of France, located in the north-central part of the country." },
-    { "id": "S1Q2", "text": "5 x 6 = ?", "options": ["28", "30", "35", "26"], "correct": "B", "explanation": "Multiplication: 5 × 6 = 30. This is a basic arithmetic operation." },
-    { "id": "S1Q3", "text": "Water chemical formula?", "options": ["O2", "CO2", "H2O", "H2"], "correct": "C", "explanation": "Water (H2O) consists of 2 hydrogen atoms and 1 oxygen atom bonded together." },
-    { "id": "S1Q4", "text": "Largest planet?", "options": ["Earth", "Jupiter", "Mars", "Venus"], "correct": "B", "explanation": "Jupiter is the largest planet in our solar system, with a diameter of about 88,000 miles." },
-    { "id": "S1Q5", "text": "HTML stands for?", "options": ["HyperText Markup Language", "HighText Machine Language", "Hyperlinks Text Mark Language", "Home Tool Markup Language"], "correct": "A", "explanation": "HTML (HyperText Markup Language) is the standard markup language used to create web pages." },
-    { "id": "S1Q6", "text": "Square root of 81?", "options": ["8", "9", "7", "6"], "correct": "B", "explanation": "√81 = 9, because 9 × 9 = 81. The square root finds the number that when multiplied by itself gives 81." },
-    { "id": "S1Q7", "text": "Which is a prime number?", "options": ["21", "27", "29", "33"], "correct": "C", "explanation": "29 is a prime number because it can only be divided by 1 and itself. 21, 27, and 33 are composite numbers." },
-    { "id": "S1Q8", "text": "Fastest land animal?", "options": ["Tiger", "Cheetah", "Lion", "Horse"], "correct": "B", "explanation": "The cheetah is the fastest land animal, capable of reaching speeds up to 70 mph (112 km/h)." },
-    { "id": "S1Q9", "text": "Who wrote Hamlet?", "options": ["Shakespeare", "Dickens", "Tolstoy", "Twain"], "correct": "A", "explanation": "William Shakespeare wrote Hamlet, one of his most famous tragedies, believed to be written between 1600 and 1601." },
-    { "id": "S1Q10", "text": "Binary of decimal 2?", "options": ["01", "11", "10", "100"], "correct": "C", "explanation": "The decimal number 2 is represented as 10 in binary (1×2¹ + 0×2⁰ = 2)." }
+    {
+      "id": "S1Q1",
+      "text": "Which company created the first iPhone?",
+      "options": ["Google", "Apple", "Microsoft", "Samsung"],
+      "correct": "B",
+      "explanation": "Apple introduced the first iPhone in 2007, revolutionizing the smartphone industry."
+    },
+    {
+      "id": "S1Q2",
+      "text": "Which language was used before Swift for iOS development?",
+      "options": ["Java", "Objective-C", "Python", "C#"],
+      "correct": "B",
+      "explanation": "Objective-C was the primary language for iOS development before Swift was introduced."
+    },
+    {
+      "id": "S1Q3",
+      "text": "Which Apple app is used for web browsing?",
+      "options": ["Safari", "Mail", "Maps", "Notes"],
+      "correct": "A",
+      "explanation": "Safari is Apple's built-in web browser used to access websites."
+    },
+    {
+      "id": "S1Q4",
+      "text": "Which Apple feature allows sending messages over the internet?",
+      "options": ["SMS", "iMessage", "Mail", "AirDrop"],
+      "correct": "B",
+      "explanation": "iMessage allows users to send messages over the internet between Apple devices."
+    },
+    {
+      "id": "S1Q5",
+      "text": "Which feature is used to unlock iPhones using fingerprint?",
+      "options": ["Face ID", "Touch ID", "Passcode", "Siri"],
+      "correct": "B",
+      "explanation": "Touch ID uses fingerprint recognition to unlock the device securely."
+    },
+    {
+      "id": "S1Q6",
+      "text": "Which Apple service is used for music streaming?",
+      "options": ["Apple Music", "Safari", "iCloud", "Notes"],
+      "correct": "A",
+      "explanation": "Apple Music is Apple’s music streaming service for songs and playlists."
+    },
+    {
+      "id": "S1Q7",
+      "text": "Which component helps apps access GPS in iOS?",
+      "options": ["Core Motion", "Core Location", "Core Data", "Core ML"],
+      "correct": "B",
+      "explanation": "Core Location framework provides GPS and location-based services."
+    },
+    {
+      "id": "S1Q8",
+      "text": "Which iOS feature helps users talk to their phone?",
+      "options": ["Siri", "Spotlight", "Widget", "Finder"],
+      "correct": "A",
+      "explanation": "Siri is Apple’s voice assistant used to perform tasks using voice commands."
+    },
+    {
+      "id": "S1Q9",
+      "text": "Which Apple app is used for navigation?",
+      "options": ["Maps", "Mail", "Photos", "Notes"],
+      "correct": "A",
+      "explanation": "Apple Maps provides navigation and location services."
+    },
+    {
+      "id": "S1Q10",
+      "text": "Which iOS feature helps find lost devices?",
+      "options": ["Find My", "iCloud", "Safari", "FaceTime"],
+      "correct": "A",
+      "explanation": "Find My helps locate lost Apple devices using GPS and internet."
+    }
   ],
   "stage2": [
-    { "id": "S2Q1", "text": "Sun rises in the?", "options": ["North", "South", "East", "West"], "correct": "C", "explanation": "The sun rises in the East due to the Earth's rotation from West to East." },
-    { "id": "S2Q2", "text": "Largest ocean?", "options": ["Atlantic", "Pacific", "Indian", "Arctic"], "correct": "B", "explanation": "The Pacific Ocean is the largest ocean on Earth, covering approximately 46% of the world's ocean surface." },
-    { "id": "S2Q3", "text": "7 + 8 = ?", "options": ["14", "15", "16", "17"], "correct": "B", "explanation": "7 + 8 = 15. This is a simple addition problem." }
+    {
+      "id": "S2Q1",
+      "text": "Which company’s CEO introduced the first iPhone?",
+      "options": ["Bill Gates", "Steve Jobs", "Elon Musk", "Sundar Pichai"],
+      "correct": "B",
+      "explanation": "Steve Jobs introduced the first iPhone in 2007 during the Macworld event."
+    },
+    {
+      "id": "S2Q2",
+      "text": "Which iOS layer is responsible for hardware interaction?",
+      "options": ["Core OS", "Core Services", "Media", "Cocoa Touch"],
+      "correct": "A",
+      "explanation": "Core OS is the lowest layer that directly interacts with hardware."
+    },
+    {
+      "id": "S2Q3",
+      "text": "Which framework is used for handling motion data like acceleration?",
+      "options": ["Core Data", "Core Motion", "Core ML", "Core Graphics"],
+      "correct": "B",
+      "explanation": "Core Motion tracks movement such as acceleration and rotation."
+    }
   ],
   "stage3": [
-    { "id": "S3Q1", "text": "Planet known as Red Planet?", "options": ["Mars", "Venus", "Saturn", "Mercury"], "correct": "A", "explanation": "Mars is called the Red Planet because of the iron oxide (rust) on its surface, which gives it a reddish appearance." },
-    { "id": "S3Q2", "text": "2^5 = ?", "options": ["10", "16", "25", "32"], "correct": "D", "explanation": "2^5 = 2 × 2 × 2 × 2 × 2 = 32. Exponentiation means multiplying the base by itself 5 times." },
-    { "id": "S3Q3", "text": "CSS used for?", "options": ["Logic", "Styling", "Database", "Hosting"], "correct": "B", "explanation": "CSS (Cascading Style Sheets) is used for styling web pages, controlling layout, colors, fonts, and visual design." }
+    {
+      "id": "S3Q1",
+      "text": "Which architecture does iOS follow?",
+      "options": ["Layered Architecture", "Client-Server", "Microservices", "Monolithic"],
+      "correct": "A",
+      "explanation": "iOS uses a layered architecture including Core OS, Core Services, Media, and Cocoa Touch."
+    },
+    {
+      "id": "S3Q2",
+      "text": "Why is iOS considered more secure than many other platforms?",
+      "options": ["Open source", "App sandboxing and strict control", "Free apps", "No updates"],
+      "correct": "B",
+      "explanation": "iOS uses sandboxing and strict app review policies to enhance security."
+    },
+    {
+      "id": "S3Q3",
+      "text": "Which system is responsible for managing app permissions in iOS?",
+      "options": ["Kernel", "Security Framework", "App Store", "UI Kit"],
+      "correct": "B",
+      "explanation": "Security frameworks manage permissions and protect user data."
+    }
   ],
   "tieBreakers": {
     "stage1": {
       "id": "TB-S1",
-      "text": "Tie-Breaker: Which number is prime?",
-      "options": ["111", "121", "131", "141"],
-      "correct": "C",
-      "explanation": "131 is prime. The others are composite numbers."
+      "text": "Which Apple framework is used for maps and location display?",
+      "options": ["MapKit", "UIKit", "Core ML", "Core Data"],
+      "correct": "A",
+      "explanation": "MapKit provides map-related functionalities in iOS apps."
     },
     "stage2": {
       "id": "TB-S2",
-      "text": "Tie-Breaker: Which planet has the most moons?",
-      "options": ["Earth", "Mars", "Jupiter", "Venus"],
-      "correct": "C",
-      "explanation": "Jupiter has the highest known number of moons."
+      "text": "Which iOS component manages memory and processes?",
+      "options": ["Core OS", "Core Services", "Media", "Cocoa Touch"],
+      "correct": "A",
+      "explanation": "Core OS handles memory management and system-level processes."
     },
     "stage3": {
       "id": "TB-S3",
-      "text": "Final Tie-Breaker: Which language runs in the browser natively?",
-      "options": ["Python", "Java", "JavaScript", "C++"],
-      "correct": "C",
-      "explanation": "JavaScript is the native language executed directly by browsers."
+      "text": "Which Apple tool is required to publish apps to the App Store?",
+      "options": ["Xcode", "Android Studio", "VS Code", "Eclipse"],
+      "correct": "A",
+      "explanation": "Xcode is required to build, test, and submit apps to the App Store."
     }
   }
 }
