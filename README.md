@@ -1,4 +1,4 @@
-# Classroom Quiz Platform
+# QuizForge-Classroom-Multiplayer-Quiz-Platform
 
 **Public-facing open-source quiz platform** for classroom and small-team use.
 - Real-time classroom MCQ quiz system for **1 teacher + up to 9 teams**, built with Node.js, Express, and Socket.io.
